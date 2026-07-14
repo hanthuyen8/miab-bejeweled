@@ -33,6 +33,7 @@
 x64/
 x86/
 build/
+build-web/
 bld/
 [Bb]in/
 [Oo]bj/

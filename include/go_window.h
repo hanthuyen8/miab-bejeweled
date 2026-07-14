@@ -131,6 +131,14 @@ namespace GoSDL {
         // Process game logic, drawing and rendering
         void gameLoop();
 
+        // Poll events and, if active, run gameLoop(). One iteration of show()'s loop.
+        void runFrame();
+
+#ifdef __EMSCRIPTEN__
+        // Trampoline for emscripten_set_main_loop_arg, which takes a plain function pointer.
+        static void emscriptenMainLoopCallback(void * arg);
+#endif
+
         /// Running flag
         bool mShouldRun;
 

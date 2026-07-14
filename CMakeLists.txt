@@ -9,6 +9,13 @@ file(GLOB SOURCE_FILES
     ${PROJECT_SOURCE_DIR}/src/*.cpp
 )
 
+if(EMSCRIPTEN)
+    # No wasm build of jsoncpp is available via pkg-config, so it's vendored
+    # under third_party/ and compiled alongside the game.
+    file(GLOB JSONCPP_SOURCE_FILES ${PROJECT_SOURCE_DIR}/third_party/jsoncpp/src/*.cpp)
+    list(APPEND SOURCE_FILES ${JSONCPP_SOURCE_FILES})
+endif()
+
 if(WIN32)
 	add_executable (freegemas WIN32
 		${SOURCE_FILES}
@@ -26,42 +33,67 @@ if(WIN32 OR VITA)
 endif()
 option(BUILD_STATIC "Build a static binary" ${BUILD_STATIC_DEFAULT})
 
-# Find libraries
-include(FindPkgConfig)
-pkg_search_module(SDL2 REQUIRED sdl2)
-pkg_search_module(SDL2_IMAGE REQUIRED SDL2_image)
-pkg_search_module(SDL2_MIXER REQUIRED SDL2_mixer)
-pkg_search_module(SDL2_TTF REQUIRED SDL2_ttf)
-pkg_search_module(JSONCPP REQUIRED jsoncpp)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
-# Link libraries
-if(BUILD_STATIC)
-    set(CMAKE_CXX_FLAGS "-static ${CMAKE_CXX_FLAGS}")
-    target_link_libraries(freegemas PRIVATE
-        ${SDL2_STATIC_LIBRARIES}
-        ${SDL2_IMAGE_STATIC_LIBRARIES}
-        ${SDL2_MIXER_STATIC_LIBRARIES}
-        ${SDL2_TTF_STATIC_LIBRARIES}
-        ${JSONCPP_STATIC_LIBRARIES}
+if(EMSCRIPTEN)
+    # SDL2/_image/_mixer/_ttf ship as built-in Emscripten ports, enabled via
+    # -s flags applied to both compile and link steps.
+    set(EMSCRIPTEN_SDL_FLAGS
+        "-sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_MIXER=2 -sUSE_SDL_TTF=2 -sSDL2_IMAGE_FORMATS=[\"png\"] -sSDL2_MIXER_FORMATS=[\"ogg\"]"
+    )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EMSCRIPTEN_SDL_FLAGS}")
+
+    target_include_directories(freegemas PRIVATE
+        ${PROJECT_SOURCE_DIR}/third_party/jsoncpp/include
+    )
+
+    set_target_properties(freegemas PROPERTIES SUFFIX ".html")
+
+    separate_arguments(EMSCRIPTEN_SDL_LINK_FLAGS UNIX_COMMAND "${EMSCRIPTEN_SDL_FLAGS}")
+    target_link_options(freegemas PRIVATE
+        ${EMSCRIPTEN_SDL_LINK_FLAGS}
+        # Fixed-size memory: growable wasm memory backs onto a resizable
+        # ArrayBuffer, which Chrome's TextDecoder currently can't decode from.
+        -sINITIAL_MEMORY=134217728
+        --preload-file ${PROJECT_SOURCE_DIR}/media@media
     )
 else()
-    target_link_libraries(freegemas PRIVATE
-        ${SDL2_LIBRARIES}
-        ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_MIXER_LIBRARIES}
-        ${SDL2_TTF_LIBRARIES}
-        ${JSONCPP_LIBRARIES}
+    # Find libraries
+    include(FindPkgConfig)
+    pkg_search_module(SDL2 REQUIRED sdl2)
+    pkg_search_module(SDL2_IMAGE REQUIRED SDL2_image)
+    pkg_search_module(SDL2_MIXER REQUIRED SDL2_mixer)
+    pkg_search_module(SDL2_TTF REQUIRED SDL2_ttf)
+    pkg_search_module(JSONCPP REQUIRED jsoncpp)
+
+    # Link libraries
+    if(BUILD_STATIC)
+        set(CMAKE_CXX_FLAGS "-static ${CMAKE_CXX_FLAGS}")
+        target_link_libraries(freegemas PRIVATE
+            ${SDL2_STATIC_LIBRARIES}
+            ${SDL2_IMAGE_STATIC_LIBRARIES}
+            ${SDL2_MIXER_STATIC_LIBRARIES}
+            ${SDL2_TTF_STATIC_LIBRARIES}
+            ${JSONCPP_STATIC_LIBRARIES}
+        )
+    else()
+        target_link_libraries(freegemas PRIVATE
+            ${SDL2_LIBRARIES}
+            ${SDL2_IMAGE_LIBRARIES}
+            ${SDL2_MIXER_LIBRARIES}
+            ${SDL2_TTF_LIBRARIES}
+            ${JSONCPP_LIBRARIES}
+        )
+    endif()
+
+    include_directories(
+        ${SDL2_INCLUDE_DIRS}
+        ${SDL2_IMAGE_INCLUDE_DIRS}
+        ${SDL2_MIXER_INCLUDE_DIRS}
+        ${SDL2_TTF_INCLUDE_DIRS}
+        ${JSONCPP_INCLUDE_DIRS}
     )
 endif()
-
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${SDL2_INCLUDE_DIRS}
-    ${SDL2_IMAGE_INCLUDE_DIRS}
-    ${SDL2_MIXER_INCLUDE_DIRS}
-    ${SDL2_TTF_INCLUDE_DIRS}
-    ${JSONCPP_INCLUDE_DIRS}
-)
 
 if (VITA)
 	include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
@@ -84,6 +116,9 @@ if (VITA)
 	)
 ELSEIF(WIN32)
 	# Nothing to do
+ELSEIF(EMSCRIPTEN)
+	# Nothing to do: assets are bundled via --preload-file above, and the
+	# build output (freegemas.html/.js/.wasm/.data) is ready to serve as-is.
 ELSE()
 	add_custom_target(
 		link_media_folder

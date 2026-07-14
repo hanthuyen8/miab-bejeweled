@@ -5,6 +5,10 @@
 #include <iostream>
 #include <stdexcept>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 using namespace std;
 
 
@@ -90,82 +94,40 @@ GoSDL::Window::~Window()
 	SDL_Quit();
 }
 
+#ifdef __EMSCRIPTEN__
+void GoSDL::Window::emscriptenMainLoopCallback(void * arg)
+{
+    Window * self = static_cast<Window *>(arg);
+    self->runFrame();
+
+    if (!self->mShouldRun)
+    {
+        emscripten_cancel_main_loop();
+    }
+}
+#endif
+
 void GoSDL::Window::show()
 {
-    // To poll events
-    SDL_Event e;
-
     // Show the window
     SDL_ShowWindow(mWindow);
 
     mShouldRun = true;
     mApplicationActive = true;
 
+#ifdef __EMSCRIPTEN__
+    // The browser drives the frame pacing (requestAnimationFrame); a blocking
+    // loop with SDL_Delay/SDL_WaitEvent would freeze the tab instead.
+    emscripten_set_main_loop_arg(emscriptenMainLoopCallback, this, 0, 1);
+#else
     // Main game loop
     while (mShouldRun) {
-
-        // Event loop
-        while (SDL_PollEvent (&e))
-        {
-            switch (e.type)
-            {
-            case SDL_APP_WILLENTERBACKGROUND:
-                mApplicationActive = false;
-                break;
-
-            case SDL_APP_WILLENTERFOREGROUND:
-                mApplicationActive = true;
-                break;
-
-            case SDL_QUIT:
-                // Yes, goto: http://stackoverflow.com/a/1257776/276451
-                goto exit;
-                break;
-
-            case SDL_KEYDOWN:
-                mMouseActive = false;
-                buttonDown(e.key.keysym.sym);
-                break;
-
-            case SDL_KEYUP:
-                buttonUp(e.key.keysym.sym);
-                break;
-
-            case SDL_MOUSEMOTION:
-                mMouseActive = true;
-                mMouseX = e.motion.x;
-                mMouseY = e.motion.y;
-                break;
-
-            case SDL_MOUSEBUTTONDOWN:
-                mMouseActive = true;
-                mouseButtonDown(e.button.button);
-                break;
-
-            case SDL_MOUSEBUTTONUP:
-                mouseButtonUp(e.button.button);
-                break;
-
-            case SDL_CONTROLLERBUTTONDOWN:
-                mMouseActive = false;
-                controllerButtonDown(e.cbutton.button);
-                break;
-
-            case SDL_CONTROLLERDEVICEADDED:
-                openGameController(e.cdevice.which);
-                break;
-
-            case SDL_CONTROLLERDEVICEREMOVED:
-                closeDisconnectedGameControllers();
-                break;
-            }
-        }
 
         if (mApplicationActive)
         {
             Uint32 gameCycleTicks = SDL_GetTicks();
 
-            gameLoop();
+            runFrame();
 
             // Limit to framerate
             gameCycleTicks = SDL_GetTicks() - gameCycleTicks;
@@ -177,11 +139,77 @@ void GoSDL::Window::show()
         else
         {
             SDL_WaitEvent(nullptr);
+            runFrame();
         }
     }
-    // Exit point for goto within switch
-exit:
-    ;
+#endif
+}
+
+void GoSDL::Window::runFrame()
+{
+    // To poll events
+    SDL_Event e;
+
+    // Event loop
+    while (SDL_PollEvent (&e))
+    {
+        switch (e.type)
+        {
+        case SDL_APP_WILLENTERBACKGROUND:
+            mApplicationActive = false;
+            break;
+
+        case SDL_APP_WILLENTERFOREGROUND:
+            mApplicationActive = true;
+            break;
+
+        case SDL_QUIT:
+            mShouldRun = false;
+            return;
+
+        case SDL_KEYDOWN:
+            mMouseActive = false;
+            buttonDown(e.key.keysym.sym);
+            break;
+
+        case SDL_KEYUP:
+            buttonUp(e.key.keysym.sym);
+            break;
+
+        case SDL_MOUSEMOTION:
+            mMouseActive = true;
+            mMouseX = e.motion.x;
+            mMouseY = e.motion.y;
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            mMouseActive = true;
+            mouseButtonDown(e.button.button);
+            break;
+
+        case SDL_MOUSEBUTTONUP:
+            mouseButtonUp(e.button.button);
+            break;
+
+        case SDL_CONTROLLERBUTTONDOWN:
+            mMouseActive = false;
+            controllerButtonDown(e.cbutton.button);
+            break;
+
+        case SDL_CONTROLLERDEVICEADDED:
+            openGameController(e.cdevice.which);
+            break;
+
+        case SDL_CONTROLLERDEVICEREMOVED:
+            closeDisconnectedGameControllers();
+            break;
+        }
+    }
+
+    if (mApplicationActive)
+    {
+        gameLoop();
+    }
 }
 
 void GoSDL::Window::gameLoop()
