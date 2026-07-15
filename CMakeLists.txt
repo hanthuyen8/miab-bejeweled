@@ -56,6 +56,9 @@ if(EMSCRIPTEN)
         # ArrayBuffer, which Chrome's TextDecoder currently can't decode from.
         -sINITIAL_MEMORY=134217728
         --preload-file ${PROJECT_SOURCE_DIR}/media@media
+        # MiabSDK::RequestHighscore calls back from JS into a C++ export (miab_sdk_on_highscore_data)
+        # via Module.ccall, which isn't attached to Module by default.
+        -sEXPORTED_RUNTIME_METHODS=["ccall"]
     )
 else()
     # Find libraries

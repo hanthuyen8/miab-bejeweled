@@ -9,6 +9,9 @@
 #include "StateGameTimetrial.h"
 #include "StateGameEndless.h"
 
+#include "MiabSDK.h"
+#include "OptionsManager.h"
+
 
 Game::Game ()
     : GoSDL::Window(800, 600, "Seajeweled")
@@ -19,6 +22,22 @@ Game::Game ()
     mMouseCursor.setPath(Assets::HandCursor);
 
     changeState("stateMainMenu");
+
+    // Xin highscore hiện tại của user từ host page (MIAB), nếu có nhúng qua iframe. Async, không
+    // block — nếu response chưa về kịp (hoặc không bao giờ về), ScoreTable vẫn dùng giá trị local
+    // hiện có (mặc định 0) như trước.
+    MiabSDK::RequestHighscore([](const std::string& mode, int score, int elapsedMs) {
+        (void) elapsedMs;
+
+        OptionsManager options;
+        options.loadResources();
+
+        if (mode == "endless") {
+            options.setHighscoreEndless(score);
+        } else if (mode == "timetrial") {
+            options.setHighscoreTimetrial(score);
+        }
+    });
 }
 
 Game::~Game()
