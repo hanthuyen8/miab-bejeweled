@@ -1,4 +1,4 @@
-# Kế hoạch tối ưu hiệu năng render — Freegemas
+# Kế hoạch tối ưu hiệu năng render — Seajeweled
 
 Kế hoạch này tổng hợp từ điều tra thực tế (Instruments Time Profiler trên
 bản desktop + Spector.js trên bản Web/WASM chạy Chrome). Thực hiện theo thứ

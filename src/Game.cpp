@@ -11,7 +11,7 @@
 
 
 Game::Game ()
-    : GoSDL::Window(800, 600, "Freegemas")
+    : GoSDL::Window(800, 600, "Seajeweled")
 {
     lDEBUG << Log::CON("Game");
 

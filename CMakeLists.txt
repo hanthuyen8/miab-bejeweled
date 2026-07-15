@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(freegemas_project)
+project(seajeweled_project)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -std=c++11 -O3")
@@ -17,12 +17,12 @@ if(EMSCRIPTEN)
 endif()
 
 if(WIN32)
-	add_executable (freegemas WIN32
+	add_executable (seajeweled WIN32
 		${SOURCE_FILES}
 		${CMAKE_CURRENT_SOURCE_DIR}/platform/windows/appicon.rc
 	)
 else()
-	add_executable (freegemas
+	add_executable (seajeweled
 		${SOURCE_FILES}
 	)
 endif()
@@ -43,14 +43,14 @@ if(EMSCRIPTEN)
     )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EMSCRIPTEN_SDL_FLAGS}")
 
-    target_include_directories(freegemas PRIVATE
+    target_include_directories(seajeweled PRIVATE
         ${PROJECT_SOURCE_DIR}/third_party/jsoncpp/include
     )
 
-    set_target_properties(freegemas PROPERTIES SUFFIX ".html")
+    set_target_properties(seajeweled PROPERTIES SUFFIX ".html")
 
     separate_arguments(EMSCRIPTEN_SDL_LINK_FLAGS UNIX_COMMAND "${EMSCRIPTEN_SDL_FLAGS}")
-    target_link_options(freegemas PRIVATE
+    target_link_options(seajeweled PRIVATE
         ${EMSCRIPTEN_SDL_LINK_FLAGS}
         # Fixed-size memory: growable wasm memory backs onto a resizable
         # ArrayBuffer, which Chrome's TextDecoder currently can't decode from.
@@ -69,7 +69,7 @@ else()
     # Link libraries
     if(BUILD_STATIC)
         set(CMAKE_CXX_FLAGS "-static ${CMAKE_CXX_FLAGS}")
-        target_link_libraries(freegemas PRIVATE
+        target_link_libraries(seajeweled PRIVATE
             ${SDL2_STATIC_LIBRARIES}
             ${SDL2_IMAGE_STATIC_LIBRARIES}
             ${SDL2_MIXER_STATIC_LIBRARIES}
@@ -77,7 +77,7 @@ else()
             ${JSONCPP_STATIC_LIBRARIES}
         )
     else()
-        target_link_libraries(freegemas PRIVATE
+        target_link_libraries(seajeweled PRIVATE
             ${SDL2_LIBRARIES}
             ${SDL2_IMAGE_LIBRARIES}
             ${SDL2_MIXER_LIBRARIES}
@@ -99,16 +99,16 @@ if (VITA)
 	include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
 
 	# Project start
-	set(VITA_APPNAME Freegemas)
-	set(VITA_TITLEID "FGEM00001")
+	set(VITA_APPNAME Seajeweled)
+	set(VITA_TITLEID "SJWL00001")
 	set(VITA_VERSION "22.02")
 
 	# Optional. You can specify more param.sfo flags this way.
 	set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
-	vita_create_self(freegemas.self freegemas)
+	vita_create_self(seajeweled.self seajeweled)
 
-	vita_create_vpk(freegemas.vpk ${VITA_TITLEID} freegemas.self
+	vita_create_vpk(seajeweled.vpk ${VITA_TITLEID} seajeweled.self
 		    VERSION ${VITA_VERSION}
 		    NAME ${VITA_APPNAME}
 		    FILE platform/vita/sce_sys sce_sys
@@ -118,7 +118,7 @@ ELSEIF(WIN32)
 	# Nothing to do
 ELSEIF(EMSCRIPTEN)
 	# Nothing to do: assets are bundled via --preload-file above, and the
-	# build output (freegemas.html/.js/.wasm/.data) is ready to serve as-is.
+	# build output (seajeweled.html/.js/.wasm/.data) is ready to serve as-is.
 ELSE()
 	add_custom_target(
 		link_media_folder
@@ -126,13 +126,13 @@ ELSE()
 	)
 
 	add_dependencies(
-		freegemas
+		seajeweled
 		link_media_folder
 	)
 
-	install(TARGETS freegemas DESTINATION bin)
-	install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/media DESTINATION share/freegemas)
-	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/freegemas.desktop DESTINATION share/applications)
-	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/icons/64x64/freegemas.png DESTINATION share/icons/hicolor/64x64/apps)
-	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION share/doc/freegemas)
+	install(TARGETS seajeweled DESTINATION bin)
+	install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/media DESTINATION share/seajeweled)
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/seajeweled.desktop DESTINATION share/applications)
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/platform/unix/icons/64x64/seajeweled.png DESTINATION share/icons/hicolor/64x64/apps)
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION share/doc/seajeweled)
 ENDIF()

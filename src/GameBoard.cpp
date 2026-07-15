@@ -5,6 +5,7 @@
 #include "go_textureatlas.h"
 #include "Assets.h"
 #include "ZOrder.h"
+#include "MiabSDK.h"
 #include <functional>
 
 using namespace std::placeholders;
@@ -52,7 +53,7 @@ void GameBoard::resetGame()
 
 }
 
-void GameBoard::endGame(int score)
+void GameBoard::endGame(int score, int elapsedMs)
 {
     if (mState == eTimeFinished || mState == eShowingScoreTable)
         return;
@@ -62,6 +63,17 @@ void GameBoard::endGame(int score)
 
     // Generate the score table
     scoreTable = std::make_shared<ScoreTable>(mGame, score, mGame->getCurrentState());
+
+    // Report the highscore to the MIAB host page, if embedded
+    std::string currentState = mGame->getCurrentState();
+    if (currentState == "stateGameEndless")
+    {
+        MiabSDK::SubmitHighscore(score, "endless");
+    }
+    else if (currentState == "stateGameTimetrial")
+    {
+        MiabSDK::SubmitHighscore(score, "timetrial", elapsedMs);
+    }
 }
 
 void GameBoard::loadResources()

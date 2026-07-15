@@ -19,7 +19,7 @@ class GameBoard
 public:
     void setGame(Game *, StateGame *);
     void resetGame();
-    void endGame(int score);
+    void endGame(int score, int elapsedMs = -1);
 
     void loadResources();
 

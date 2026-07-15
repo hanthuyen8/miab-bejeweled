@@ -20,9 +20,9 @@ std::string getBasePath()
 
     #if !defined(_WIN32) && !defined(__vita__)
         // Check if game is installed system wide
-        DIR* dir = opendir(std::string(basePathStr + "../share/freegemas/").c_str());
+        DIR* dir = opendir(std::string(basePathStr + "../share/seajeweled/").c_str());
         if (dir) {
-            basePathStr += "../share/freegemas/";
+            basePathStr += "../share/seajeweled/";
             closedir(dir);
         }
     #endif
@@ -34,7 +34,7 @@ std::string getPrefPath()
 {
     std::string prefPathStr;
 
-    char *prefPath = SDL_GetPrefPath(NULL, "freegemas");
+    char *prefPath = SDL_GetPrefPath(NULL, "seajeweled");
     if (prefPath) {
         prefPathStr = prefPath;
         SDL_free(prefPath);

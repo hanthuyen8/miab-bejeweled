@@ -1,10 +1,10 @@
 [Desktop Entry]
-Name=Freegemas
+Name=Seajeweled
 GenericName=Match 3 game
 Comment=an open source match 3 game
-Exec=freegemas
-Icon=freegemas
+Exec=seajeweled
+Icon=seajeweled
 Type=Application
 Keywords=match3;games;game;
 Categories=Game;
-StartupWMClass=freegemas
+StartupWMClass=seajeweled

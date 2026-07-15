@@ -1,6 +1,6 @@
-# Tích hợp Freegemas (WASM) vào React app
+# Tích hợp Seajeweled (WASM) vào React app
 
-Tài liệu này mô tả cách nhúng bản build web của game Freegemas (C++/SDL2 compile
+Tài liệu này mô tả cách nhúng bản build web của game Seajeweled (C++/SDL2 compile
 sang WebAssembly qua Emscripten) vào một React app đã có sẵn, dùng cho agent
 phụ trách phần React.
 
@@ -12,16 +12,22 @@ phụ trách phần React.
 
   | File | Vai trò | Kích thước hiện tại |
   |---|---|---|
-  | `freegemas.html` | Shell HTML mặc định của Emscripten (React không dùng file này, xem mục 3.4) | ~20 KB |
-  | `freegemas.js` | JS glue code (khởi tạo module, quản lý canvas, filesystem ảo...) | ~185 KB |
-  | `freegemas.wasm` | Binary WASM chứa toàn bộ game logic | ~2.5 MB |
-  | `freegemas.data` | Toàn bộ thư mục `media/` (ảnh, font, âm thanh) được đóng gói sẵn, nạp vào filesystem ảo lúc khởi động | ~3.9 MB |
+  | `seajeweled.html` | Shell HTML mặc định của Emscripten (React không dùng file này, xem mục 3.4) | ~20 KB |
+  | `seajeweled.js` | JS glue code (khởi tạo module, quản lý canvas, filesystem ảo...) | ~185 KB |
+  | `seajeweled.wasm` | Binary WASM chứa toàn bộ game logic | ~2.5 MB |
+  | `seajeweled.data` | Toàn bộ thư mục `media/` (ảnh, font, âm thanh) được đóng gói sẵn, nạp vào filesystem ảo lúc khởi động | ~3.9 MB |
 
-- **Highscore hiện tại chỉ lưu local** trong game (file ảo `options.json` qua
+- **Highscore local** vẫn lưu trong game như trước (file ảo `options.json` qua
   `SDL_GetPrefPath`, nằm trong MEMFS của WASM — **không** persist qua session
-  mới trên web vì MEMFS reset mỗi lần load trang). Chưa có bất kỳ lời gọi
-  mạng/API nào trong code C++. Việc gắn highscore online là **việc cần làm
-  thêm ở tầng C++**, chưa có trong bản này (xem mục 6 — Việc cần làm thêm).
+  mới trên web vì MEMFS reset mỗi lần load trang).
+- **Highscore online**: đã tích hợp `MiabSDK::SubmitHighscore` (xem
+  `include/MiabSDK.h` / `src/MiabSDK.cpp`, gọi từ `GameBoard::endGame`). Khi
+  build web, mỗi lần kết thúc mode `endless` hoặc `timetrial` game tự
+  `postMessage({type: 'miab:highscore', score, mode, elapsedMs}, ...)` ra
+  `window.parent` theo đúng contract mô tả trong
+  `docs/games/highscore-sdk.md` (repo `miab-v1`). Phần nhận + forward lên
+  server là trách nhiệm của React host (`SeajeweledScreen.tsx`), đã implement
+  sẵn ở phía `miab-v1`, không cần đụng gì thêm bên C++.
 
 ## 2. Cách build (nếu cần build lại)
 
@@ -32,7 +38,7 @@ emcmake cmake -S . -B build-web
 emmake cmake --build build-web -- -j"$(sysctl -n hw.ncpu)"
 ```
 
-Output nằm trong `build-web/freegemas.{html,js,wasm,data}`. Thư mục
+Output nằm trong `build-web/seajeweled.{html,js,wasm,data}`. Thư mục
 `build-web/` đã có trong `.gitignore`, không commit vào repo.
 
 ## 3. Cách nhúng vào React — khuyến nghị dùng iframe
@@ -45,16 +51,16 @@ và tránh đụng namespace global mà Emscripten JS glue tạo ra (`Module`, v
 
 ### 3.1. Đặt file tĩnh
 
-Copy 3 file `freegemas.js`, `freegemas.wasm`, `freegemas.data` vào thư mục
+Copy 3 file `seajeweled.js`, `seajeweled.wasm`, `seajeweled.data` vào thư mục
 static của React app, ví dụ:
 
 ```
-public/games/freegemas/freegemas.js
-public/games/freegemas/freegemas.wasm
-public/games/freegemas/freegemas.data
+public/games/seajeweled/seajeweled.js
+public/games/seajeweled/seajeweled.wasm
+public/games/seajeweled/seajeweled.data
 ```
 
-(Không cần copy `freegemas.html` — React tự viết HTML/loader riêng, xem mục
+(Không cần copy `seajeweled.html` — React tự viết HTML/loader riêng, xem mục
 3.4 cho các yêu cầu bắt buộc khi làm vậy.)
 
 Vì đây là file tĩnh, không cần route/server logic riêng — deploy như asset
@@ -64,11 +70,11 @@ người dùng chơi, chỉ đổi khi bạn build lại và deploy).
 ### 3.2. Component iframe
 
 ```jsx
-function FreegemasGame() {
+function SeajeweledGame() {
   return (
     <iframe
-      src="/games/freegemas/index.html"
-      title="Freegemas"
+      src="/games/seajeweled/index.html"
+      title="Seajeweled"
       allow="pointer-lock; fullscreen"
       style={{ width: '100%', height: '100%', border: 0 }}
     />
@@ -89,26 +95,26 @@ app — đúng như trường hợp hiện tại — thì code bên trong iframe
 CORS, cookie/session cũng được gửi kèm tự động. Không cần proxy hay cấu hình
 gì thêm cho việc này.
 
-### 3.4. HTML/loader riêng (React không dùng `freegemas.html` mặc định)
+### 3.4. HTML/loader riêng (React không dùng `seajeweled.html` mặc định)
 
-Vì chỉ lấy `freegemas.js` + `freegemas.wasm` + `freegemas.data` và tự viết
+Vì chỉ lấy `seajeweled.js` + `seajeweled.wasm` + `seajeweled.data` và tự viết
 HTML/JS loader riêng, cần đảm bảo các điểm sau — thiếu cái nào cũng có thể
 gây lỗi khó nhận ra (game load được nhưng im lặng không chạy, hoặc chạy
 nhưng mất hết log debug):
 
 1. **Canvas**: tạo sẵn 1 thẻ `<canvas id="canvas">` (đúng id `canvas`, đây
-   là default Emscripten tìm) trong HTML *trước khi* load `freegemas.js`,
+   là default Emscripten tìm) trong HTML *trước khi* load `seajeweled.js`,
    hoặc set `Module.canvas` trỏ tới canvas đó trước khi script chạy.
-2. **`Module.locateFile`**: nếu `freegemas.wasm`/`freegemas.data` được host
-   ở path khác thư mục chứa `freegemas.js` (ví dụ bundler đổi tên/hash file,
+2. **`Module.locateFile`**: nếu `seajeweled.wasm`/`seajeweled.data` được host
+   ở path khác thư mục chứa `seajeweled.js` (ví dụ bundler đổi tên/hash file,
    hoặc build tool tách asset ra CDN khác), PHẢI set:
    ```js
    window.Module = {
      canvas: document.getElementById('canvas'),
-     locateFile: (path) => `/games/freegemas/${path}`,
+     locateFile: (path) => `/games/seajeweled/${path}`,
    };
    ```
-   trước khi `<script src=".../freegemas.js">` chạy. Nếu bỏ qua bước này mà
+   trước khi `<script src=".../seajeweled.js">` chạy. Nếu bỏ qua bước này mà
    đường dẫn thực tế khác thư mục gốc, module sẽ fetch sai path và fail
    silent hoặc báo lỗi mơ hồ.
 3. **KHÔNG override `Module.print`/`Module.printErr` để nuốt mất output** —
@@ -126,7 +132,7 @@ Game được thiết kế cho màn ngang. Trên mobile, nếu muốn giữ tran
 điện thoại vật lý, dùng CSS transform xoay 90° container chứa iframe:
 
 ```css
-.freegemas-container {
+.seajeweled-container {
   position: fixed;
   inset: 0;
   width: 100dvh;
@@ -136,7 +142,7 @@ Game được thiết kế cho màn ngang. Trên mobile, nếu muốn giữ tran
 }
 
 @media (orientation: landscape) {
-  .freegemas-container {
+  .seajeweled-container {
     width: 100dvw;
     height: 100dvh;
     transform: none;
@@ -194,7 +200,7 @@ không phải ở C++ code của game.
 **Bước tiếp theo, cần agent React đo giúp:**
 
 Thêm tạm đoạn JS này vào đầu file HTML/loader riêng (trước khi load
-`freegemas.js`), để đo khoảng cách giữa các frame ở tầng JS — bắt được cả
+`seajeweled.js`), để đo khoảng cách giữa các frame ở tầng JS — bắt được cả
 những chỗ đứng hình xảy ra ngoài code C++ mà instrumentation trong
 `gameLoop()` không thấy được:
 
@@ -225,16 +231,8 @@ nào đó), không phải ở C++.
 
 ## 6. Việc cần làm thêm (chưa nằm trong bản build hiện tại)
 
-- **Highscore online**: hiện tại 100% local, không gọi API nào. Muốn làm
-  online cần:
-  1. Phía C++: thêm code đọc config (endpoint URL) được truyền từ ngoài vào
-     — ví dụ dùng Emscripten `--pre-js` để đọc `URLSearchParams` từ URL của
-     iframe, set vào biến `Module.apiBase` trước khi WASM khởi động; code
-     C++ gọi ra JS (`EM_ASM`/`emscripten_fetch`) để đọc biến đó và
-     fetch/POST highscore.
-  2. Phía React/backend: expose endpoint (ví dụ `/api/freegemas/highscore`)
-     hỗ trợ GET (lấy điểm cao hiện tại) và POST (lưu điểm mới).
-  - Vì cùng origin, KHÔNG cần cấu hình CORS cho endpoint này.
+- **Highscore online**: đã xong, xem mục 1. Còn lại là việc của phía
+  `miab-v1` (đã implement — xem `docs/games/highscore-sdk.md` mục 3).
 - **Âm thanh autoplay**: trình duyệt chặn autoplay audio cho tới khi có
   tương tác người dùng (click/tap). Game hiện tự phát nhạc nền ngay khi vào
   màn chơi (`GameIndicators::loadResources`, `src/GameIndicators.cpp`) — có
