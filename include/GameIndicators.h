@@ -6,6 +6,7 @@
 #include "go_music.h"
 
 #include "BaseButton.h"
+#include "BitmapNumber.h"
 
 #include "OptionsManager.h"
 
@@ -64,11 +65,12 @@ private:
 
     bool mTimeEnabled;
 
-    /// Font for the timer
-    GoSDL::Font mFontTime;
+    /// Bitmap-font renderer for the score/time digits (from the atlas)
+    BitmapNumber mNumbers;
 
-    /// Font for the current-score text
-    GoSDL::Font mFontScore;
+    /// Current score/time strings to draw (updated only when the value changes)
+    std::string mScoreText = "0";
+    std::string mTimeText;
 
    // Background of the timer
     GoSDL::Image mImgTimeBackground;
@@ -76,12 +78,8 @@ private:
     /// Background for the current-score board
     GoSDL::Image mImgScoreBackground;
 
-    /// Image for the clock
-    GoSDL::Image mImgTime;
+    /// Header labels ("score" / "time left"), still rendered with SDL_ttf
     GoSDL::Image mImgTimeHeader;
-
-    /// Image for the current-score
-    GoSDL::Image mImgScore;
     GoSDL::Image mImgScoreHeader;
 
     /// @{

@@ -22,11 +22,8 @@ void GameIndicators::setGame (Game * g, StateGame * sg)
 
 void GameIndicators::loadResources()
 {
-    // Load the font for the timer
-    mFontTime.setAll(mGame, Assets::FontLcd, 62);
-
-    // Load the font for the scoreboard
-    mFontScore.setAll(mGame, Assets::FontLcd, 33);
+    // Score/time digits are drawn from the atlas (bitmap font)
+    mNumbers.loadResources(mGame);
 
     // Font to render some headers
     GoSDL::Font tempHeaderFont;
@@ -91,10 +88,10 @@ void GameIndicators::increaseScore (int amount)
 
 void GameIndicators::regenerateScoreTexture()
 {
-    // Regenerate the texture if the score has changed
+    // Update the score string if it has changed
     if (mScore != mScorePrevious)
     {
-        mImgScore = mFontScore.renderText(std::to_string(mScore), {78, 193, 190, 255});
+        mScoreText = std::to_string(mScore);
         mScorePrevious = mScore;
     }
 }
@@ -109,11 +106,9 @@ void GameIndicators::updateTime (double time)
         int minutes = int(mRemainingTime / 60);
         int seconds = int(mRemainingTime - minutes * 60);
 
-        std::string txtTime = std::to_string(minutes) +
+        mTimeText = std::to_string(minutes) +
             (seconds < 10 ? ":0" : ":") +
             std::to_string(seconds);
-
-        mImgTime = mFontTime.renderText(txtTime, {78, 193, 190, 255});
 
         mRemainingTimePrevious = mRemainingTime;
     }
@@ -129,18 +124,24 @@ void GameIndicators::draw()
     mResetButton.draw(17, vertButStart + 47, Z::UIPanel);
     mExitButton.draw(17, 538, Z::UIPanel);
 
+    // LCD colour shared by the score and time digits
+    const SDL_Color lcdColor = {78, 193, 190, 255};
+    const int scoreFontSize = 33;
+    const int timeFontSize = 62;
+
     // Draw the score. The number sits on top of its background, so it must
     // use a higher z than the background (same convention as BaseButton) —
     // the drawing queue only guarantees ordering by z, not by insertion order.
+    // The number is right-aligned to x=197.
     mImgScoreBackground.draw(17, 124, Z::UIPanel);
     mImgScoreHeader.draw(17 + mImgScoreBackground.getWidth() / 2 - mImgScoreHeader.getWidth() / 2, 84, Z::UIText);
-    mImgScore.draw(197 - mImgScore.getWidth(), 127, Z::UIText);
+    mNumbers.draw(mScoreText, 197 - mNumbers.width(mScoreText, scoreFontSize), 127, Z::UIText, scoreFontSize, lcdColor);
 
     // Draw the time
     if (mTimeEnabled) {
         mImgTimeBackground.draw(17, 230, Z::UIPanel);
         mImgTimeHeader . draw(17 + mImgTimeBackground.getWidth() / 2 - mImgTimeHeader.getWidth() / 2, 190, Z::UIText);
-        mImgTime.draw(190 - mImgTime.getWidth(), 232, Z::UIText);
+        mNumbers.draw(mTimeText, 190 - mNumbers.width(mTimeText, timeFontSize), 232, Z::UIText, timeFontSize, lcdColor);
     }
 }
 

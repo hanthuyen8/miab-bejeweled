@@ -59,6 +59,19 @@ namespace Assets {
         constexpr const char * IconHint    = "iconHint.png";
         constexpr const char * IconRestart = "iconRestart.png";
         constexpr const char * IconExit    = "iconExit.png";
+
+        // LCD bitmap-font glyphs (fuentelcd, baked white @72px) for score/time
+        constexpr const char * Digit0 = "digit0.png";
+        constexpr const char * Digit1 = "digit1.png";
+        constexpr const char * Digit2 = "digit2.png";
+        constexpr const char * Digit3 = "digit3.png";
+        constexpr const char * Digit4 = "digit4.png";
+        constexpr const char * Digit5 = "digit5.png";
+        constexpr const char * Digit6 = "digit6.png";
+        constexpr const char * Digit7 = "digit7.png";
+        constexpr const char * Digit8 = "digit8.png";
+        constexpr const char * Digit9 = "digit9.png";
+        constexpr const char * Colon  = "colon.png";
     }
 }
 
