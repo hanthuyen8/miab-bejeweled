@@ -122,16 +122,18 @@ void GameIndicators::draw()
     mResetButton.draw(17, vertButStart + 47, 2);
     mExitButton.draw(17, 538, 2);
 
-    // Draw the score
+    // Draw the score. The number sits on top of its background, so it must
+    // use a higher z than the background (same convention as BaseButton) —
+    // the drawing queue only guarantees ordering by z, not by insertion order.
     mImgScoreBackground.draw(17, 124, 2);
     mImgScoreHeader.draw(17 + mImgScoreBackground.getWidth() / 2 - mImgScoreHeader.getWidth() / 2, 84, 3);
-    mImgScore.draw(197 - mImgScore.getWidth(), 127, 2);
+    mImgScore.draw(197 - mImgScore.getWidth(), 127, 3);
 
     // Draw the time
     if (mTimeEnabled) {
         mImgTimeBackground.draw(17, 230, 2);
         mImgTimeHeader . draw(17 + mImgTimeBackground.getWidth() / 2 - mImgTimeHeader.getWidth() / 2, 190, 3);
-        mImgTime.draw(190 - mImgTime.getWidth(), 232, 2);
+        mImgTime.draw(190 - mImgTime.getWidth(), 232, 3);
     }
 }
 

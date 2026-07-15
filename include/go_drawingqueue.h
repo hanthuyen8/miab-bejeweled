@@ -20,7 +20,9 @@
 #ifndef _DRAWINGQUEUE_H_
 #define _DRAWINGQUEUE_H_
 
-#include <map>
+#include <vector>
+#include <utility>
+#include <algorithm>
 #include <SDL.h>
 #include <SDL_image.h>
 
@@ -40,17 +42,36 @@ namespace GoSDL {
 
     /**
      * Represents a drawing queue, where the Drawable objects will be drawn
-     * depending on their depth (which is the key of the map).
+     * depending on their depth (the .first of each pair).
+     *
+     * Backed by a contiguous std::vector (cache-friendly, no per-node heap
+     * allocation). Elements are appended unsorted via draw(); call sort()
+     * once before iterating to order them by depth.
      */
 
-    class DrawingQueue : private std::multimap<float, DrawingQueueOperation>
+    class DrawingQueue : private std::vector<std::pair<float, DrawingQueueOperation>>
     {
     public:
 
         /// Adds a new drawable element to the drawing queue in the selected depth
         void draw(float z, DrawingQueueOperation operation)
         {
-            insert(std::pair<float, DrawingQueueOperation>(z, operation));
+            push_back(std::pair<float, DrawingQueueOperation>(z, operation));
+        }
+
+        /// Sorts the queued operations by depth. Secondary key is the texture
+        /// pointer so that draws sharing a texture end up contiguous (fewer
+        /// real bindTexture switches on the GPU). stable_sort keeps the
+        /// original insertion order among elements with identical (z, texture),
+        /// preserving alpha-blend ordering for overlapping same-texture effects.
+        void sort()
+        {
+            std::stable_sort(begin(), end(),
+                [](const value_type & a, const value_type & b)
+                {
+                    if (a.first != b.first) return a.first < b.first;
+                    return a.second.mTexture < b.second.mTexture;
+                });
         }
 
     private:
@@ -58,7 +79,7 @@ namespace GoSDL {
     };
 
     // Iterator for the DrawingQueue
-    typedef std::multimap<float, DrawingQueueOperation>::const_iterator DrawingQueueIterator;
+    typedef std::vector<std::pair<float, DrawingQueueOperation>>::const_iterator DrawingQueueIterator;
 
 }
 

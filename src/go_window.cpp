@@ -223,6 +223,9 @@ void GoSDL::Window::gameLoop()
     // Render the background clear
     SDL_RenderClear (mRenderer);
 
+    // Sort all pending operations by depth (and texture) in one pass
+    mDrawingQueue.sort();
+
     // Iterator for drawing operations
     GoSDL::DrawingQueueIterator qIt;
     const GoSDL::DrawingQueueOperation * op;
