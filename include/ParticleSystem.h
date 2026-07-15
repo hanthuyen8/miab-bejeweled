@@ -6,6 +6,7 @@
 #include "Animation.h"
 #include "log.h"
 #include "Util.h"
+#include "ZOrder.h"
 
 #include <ctime>
 #include <vector>
@@ -45,7 +46,7 @@ struct Particle{
     }
 
     void draw(int oX, int oY){
-        mImage->draw(oX + mPosX, oY + mPosY, 7, mSizeCoef, mSizeCoef, 0, 255, mColor);
+        mImage->draw(oX + mPosX, oY + mPosY, Z::Particle, mSizeCoef, mSizeCoef, 0, 255, mColor);
     }
 
     float estado(){

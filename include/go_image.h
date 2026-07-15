@@ -30,6 +30,11 @@ namespace GoSDL {
         bool setWindowAndPath(Window * parentwindow, string path);
         void setTexture (SDL_Texture * texture);
 
+        /// Restrict this image to a sub-region of its texture (an atlas frame).
+        /// getWidth()/getHeight() and draw() then behave as if this region were
+        /// a standalone sprite, so callers need no changes.
+        void setSrcRect (SDL_Rect srcRect);
+
         bool draw (int x, int y, int z,
             double factorX = 1, double factorY = 1, float angle = 0,
             Uint8 alpha = 255, SDL_Color color = {255, 255, 255, 255});
@@ -72,6 +77,11 @@ namespace GoSDL {
 
         Window * mParentWindow = NULL;
         int mWidth, mHeight;
+
+        // Sub-region of mTexture to draw (used for atlas frames). When
+        // mHasSrcRect is false the whole texture is drawn.
+        SDL_Rect mSrcRect = {0, 0, 0, 0};
+        bool mHasSrcRect = false;
 
         string mPath;
     };

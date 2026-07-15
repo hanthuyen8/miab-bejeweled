@@ -1,4 +1,6 @@
 #include "Game.h"
+#include "Assets.h"
+#include "ZOrder.h"
 #include "State.h"
 
 #include "StateMainMenu.h"
@@ -14,7 +16,7 @@ Game::Game ()
     lDEBUG << Log::CON("Game");
 
     mMouseCursor.setWindow(this);
-    mMouseCursor.setPath("media/handCursor.png");
+    mMouseCursor.setPath(Assets::HandCursor);
 
     changeState("stateMainMenu");
 }
@@ -34,7 +36,7 @@ void Game::draw ()
 {
     #ifndef __vita__
         if (getMouseActive()) {
-            mMouseCursor.draw(getMouseX(), getMouseY(), 999);
+            mMouseCursor.draw(getMouseX(), getMouseY(), Z::Cursor);
         }
     #endif
 

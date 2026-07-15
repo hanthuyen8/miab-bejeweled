@@ -117,7 +117,7 @@ namespace GoSDL {
         friend class Font;
 
         inline SDL_Renderer * getRenderer() { return mRenderer; }
-        void enqueueDraw(SDL_Texture * texture, SDL_Rect destRect, double angle, float z, Uint8 alpha, SDL_Color color);
+        void enqueueDraw(SDL_Texture * texture, SDL_Rect destRect, double angle, float z, Uint8 alpha, SDL_Color color, const SDL_Rect * srcRect = nullptr);
 
         // Called when a game controller is connected
         void openGameController(Sint32);

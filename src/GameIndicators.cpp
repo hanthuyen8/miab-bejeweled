@@ -3,6 +3,9 @@
 #include "inter.h"
 
 #include "StateGame.h"
+#include "go_textureatlas.h"
+#include "Assets.h"
+#include "ZOrder.h"
 
 GameIndicators::GameIndicators() :
     mGame (NULL),
@@ -20,24 +23,28 @@ void GameIndicators::setGame (Game * g, StateGame * sg)
 void GameIndicators::loadResources()
 {
     // Load the font for the timer
-    mFontTime.setAll(mGame, "media/fuentelcd.ttf", 62);
+    mFontTime.setAll(mGame, Assets::FontLcd, 62);
 
     // Load the font for the scoreboard
-    mFontScore.setAll(mGame, "media/fuentelcd.ttf", 33);
+    mFontScore.setAll(mGame, Assets::FontLcd, 33);
 
     // Font to render some headers
     GoSDL::Font tempHeaderFont;
-    tempHeaderFont.setAll(mGame, "media/fuenteNormal.ttf", 37);
+    tempHeaderFont.setAll(mGame, Assets::FontNormal, 37);
 
     mImgScoreHeader = tempHeaderFont.renderTextWithShadow(_("score"), {160, 169, 255, 255}, 1, 1, {0, 0, 0, 128});
 
     mImgTimeHeader = tempHeaderFont.renderTextWithShadow(_("time left"), {160, 169, 255, 255}, 1, 1, {0, 0, 0, 128});
 
+    // Background images come from the shared atlas so they batch together
+    GoSDL::TextureAtlas atlas;
+    atlas.load(mGame, Assets::AtlasImage, Assets::AtlasData);
+
     // Load the background image for the time
-    mImgTimeBackground.setWindowAndPath(mGame, "media/timeBackground.png");
+    atlas.setImage(mImgTimeBackground, Assets::Sprite::TimeBackground);
 
     // Load the background image for the scoreboard
-    mImgScoreBackground.setWindowAndPath(mGame, "media/scoreBackground.png");
+    atlas.setImage(mImgScoreBackground, Assets::Sprite::ScoreBackground);
 
     // Buttons
     std::string mHintButtonText = _("Show hint");
@@ -50,15 +57,15 @@ void GameIndicators::loadResources()
         mExitButtonText += std::string(" (START)");
     #endif
 
-    mHintButton.set(mGame,  mHintButtonText.c_str(), "iconHint.png");
-    mResetButton.set(mGame, mResetButtonText.c_str(), "iconRestart.png");
-    mExitButton.set(mGame, mExitButtonText.c_str(), "iconExit.png");
+    mHintButton.set(mGame,  mHintButtonText.c_str(), Assets::Sprite::IconHint);
+    mResetButton.set(mGame, mResetButtonText.c_str(), Assets::Sprite::IconRestart);
+    mExitButton.set(mGame, mExitButtonText.c_str(), Assets::Sprite::IconExit);
 
     // Music
     options.loadResources();
 
     if (options.getMusicEnabled()) {
-        sfxSong.setSample("media/music.ogg");
+        sfxSong.setSample(Assets::Music);
         sfxSong.play();
     }
 }
@@ -118,22 +125,22 @@ void GameIndicators::draw()
     int vertButStart = 407;
 
     // Draw the buttons
-    mHintButton.draw(17, vertButStart, 2);
-    mResetButton.draw(17, vertButStart + 47, 2);
-    mExitButton.draw(17, 538, 2);
+    mHintButton.draw(17, vertButStart, Z::UIPanel);
+    mResetButton.draw(17, vertButStart + 47, Z::UIPanel);
+    mExitButton.draw(17, 538, Z::UIPanel);
 
     // Draw the score. The number sits on top of its background, so it must
     // use a higher z than the background (same convention as BaseButton) —
     // the drawing queue only guarantees ordering by z, not by insertion order.
-    mImgScoreBackground.draw(17, 124, 2);
-    mImgScoreHeader.draw(17 + mImgScoreBackground.getWidth() / 2 - mImgScoreHeader.getWidth() / 2, 84, 3);
-    mImgScore.draw(197 - mImgScore.getWidth(), 127, 3);
+    mImgScoreBackground.draw(17, 124, Z::UIPanel);
+    mImgScoreHeader.draw(17 + mImgScoreBackground.getWidth() / 2 - mImgScoreHeader.getWidth() / 2, 84, Z::UIText);
+    mImgScore.draw(197 - mImgScore.getWidth(), 127, Z::UIText);
 
     // Draw the time
     if (mTimeEnabled) {
-        mImgTimeBackground.draw(17, 230, 2);
-        mImgTimeHeader . draw(17 + mImgTimeBackground.getWidth() / 2 - mImgTimeHeader.getWidth() / 2, 190, 3);
-        mImgTime.draw(190 - mImgTime.getWidth(), 232, 3);
+        mImgTimeBackground.draw(17, 230, Z::UIPanel);
+        mImgTimeHeader . draw(17 + mImgTimeBackground.getWidth() / 2 - mImgTimeHeader.getWidth() / 2, 190, Z::UIText);
+        mImgTime.draw(190 - mImgTime.getWidth(), 232, Z::UIText);
     }
 }
 

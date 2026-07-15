@@ -1,6 +1,9 @@
 #include "BaseButton.h"
 
 #include "go_font.h"
+#include "go_textureatlas.h"
+#include "Assets.h"
+#include "ZOrder.h"
 
 BaseButton::BaseButton() { }
 
@@ -9,8 +12,13 @@ void BaseButton::set (GoSDL::Window * parentWindow, std::string caption, std::st
 {
     mParentWindow = parentWindow;
 
+    // Background and icon come from the shared atlas so they batch with the
+    // rest of the UI/board sprites instead of using their own textures.
+    GoSDL::TextureAtlas atlas;
+    atlas.load(mParentWindow, Assets::AtlasImage, Assets::AtlasData);
+
     // Load the background image
-    mImgBackground.setWindowAndPath(mParentWindow, "media/buttonBackground.png");
+    atlas.setImage(mImgBackground, Assets::Sprite::ButtonBackground);
 
     // Set the flag
     mHasIcon = iconPath != "";
@@ -18,7 +26,7 @@ void BaseButton::set (GoSDL::Window * parentWindow, std::string caption, std::st
     // Load the icon image
     if (mHasIcon)
     {
-        mImgIcon.setWindowAndPath(mParentWindow, "media/" + iconPath);
+        atlas.setImage(mImgIcon, iconPath);
     }
 
     setText(caption);
@@ -28,7 +36,7 @@ void BaseButton::setText(std::string caption)
 {
     // Load the font for the button caption
     GoSDL::Font textFont;
-    textFont.setAll(mParentWindow, "media/fuenteNormal.ttf", 27);
+    textFont.setAll(mParentWindow, Assets::FontNormal, 27);
 
     // Generate the button caption texture
     mImgCaption = textFont.renderTextWithShadow(caption, {255, 255, 255, 255}, 1, 2, {0, 0, 0, 128});
@@ -53,10 +61,10 @@ void BaseButton::draw(int x, int y, double z)
 
     if (mHasIcon)
     {
-        mImgIcon.draw(x + 7, y, z + 1);
+        mImgIcon.draw(x + 7, y, z + Z::Button::Icon);
     }
 
-    mImgCaption.draw(x + mTextHorizontalPosition, y + 5, z + 2);
+    mImgCaption.draw(x + mTextHorizontalPosition, y + 5, z + Z::Button::Caption);
 
     mImgBackground.draw(x, y, z);
 

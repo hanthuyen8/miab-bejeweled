@@ -2,6 +2,9 @@
 
 #include "Game.h"
 #include "StateGame.h"
+#include "go_textureatlas.h"
+#include "Assets.h"
+#include "ZOrder.h"
 #include <functional>
 
 using namespace std::placeholders;
@@ -63,20 +66,26 @@ void GameBoard::endGame(int score)
 
 void GameBoard::loadResources()
 {
-    mImgWhite.setWindowAndPath(mGame, "media/gemWhite.png");
-    mImgRed.setWindowAndPath(mGame, "media/gemRed.png");
-    mImgPurple.setWindowAndPath(mGame, "media/gemPurple.png");
-    mImgOrange.setWindowAndPath(mGame, "media/gemOrange.png");
-    mImgGreen.setWindowAndPath(mGame, "media/gemGreen.png");
-    mImgYellow.setWindowAndPath(mGame, "media/gemYellow.png");
-    mImgBlue.setWindowAndPath(mGame, "media/gemBlue.png");
+    // All board sprites live in a single texture atlas, so every gem, the
+    // selector and the particles share one SDL_Texture and the renderer can
+    // batch their draws (see go_textureatlas.h / the texture cache in Image).
+    GoSDL::TextureAtlas atlas;
+    atlas.load(mGame, Assets::AtlasImage, Assets::AtlasData);
 
-    // Load the image for the square selector
-    mImgSelector.setWindowAndPath(mGame, "media/selector.png");
+    atlas.setImage(mImgWhite,  Assets::Sprite::GemWhite);
+    atlas.setImage(mImgRed,    Assets::Sprite::GemRed);
+    atlas.setImage(mImgPurple, Assets::Sprite::GemPurple);
+    atlas.setImage(mImgOrange, Assets::Sprite::GemOrange);
+    atlas.setImage(mImgGreen,  Assets::Sprite::GemGreen);
+    atlas.setImage(mImgYellow, Assets::Sprite::GemYellow);
+    atlas.setImage(mImgBlue,   Assets::Sprite::GemBlue);
 
-    // Load the images for the particles
-    mImgParticle1.setWindowAndPath(mGame, "media/partc1.png");
-    mImgParticle2.setWindowAndPath(mGame, "media/partc2.png");
+    // The square selector
+    atlas.setImage(mImgSelector, Assets::Sprite::Selector);
+
+    // The particles
+    atlas.setImage(mImgParticle1, Assets::Sprite::Particle1);
+    atlas.setImage(mImgParticle2, Assets::Sprite::Particle2);
 
     // Initialise the hint
     mHint.setWindow(mGame);
@@ -297,14 +306,14 @@ void GameBoard::draw()
     mImgSelector.draw(
         241 + mSelectorX * 65,
         41 + mSelectorY * 65,
-        4);
+        Z::Selector);
 
     // Draw the selector if a gem has been selected
     if (mState == eGemSelected)
     {
         mImgSelector.draw(241 + mSelectedSquareFirst.x * 65,
               41 + mSelectedSquareFirst.y * 65,
-              4, 1, 1, 0, 255, {0, 255, 255, 255});
+              Z::Selector, 1, 1, 0, 255, {0, 255, 255, 255});
     }
 
     // Draw the hint
@@ -323,7 +332,7 @@ void GameBoard::draw()
     // If game has finished, draw the score table
     if (mState == eShowingScoreTable)
     {
-        scoreTable -> draw(241 + (65 * 8) / 2 - 150  , 105, 3);
+        scoreTable -> draw(241 + (65 * 8) / 2 - 150  , 105, Z::ScoreTable);
     }
 
 
@@ -470,7 +479,7 @@ void GameBoard::draw()
                 continue;
             }
 
-            img->draw(imgX, imgY, 3, 1, 1, 0, imgAlpha);
+            img->draw(imgX, imgY, Z::Gem, 1, 1, 0, imgAlpha);
         }
 
 
@@ -642,7 +651,7 @@ void GameBoard::createFloatingScores()
         mFloatingScores.emplace_back(FloatingScore(mGame,
            score,
            m.midSquare().x,
-           m.midSquare().y, 80));
+           m.midSquare().y, Z::FloatingScore));
 
         // Create a new particle system for it to appear over the square
         for(size_t i = 0, s = m.size(); i < s; ++i)

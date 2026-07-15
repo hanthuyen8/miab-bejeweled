@@ -1,5 +1,7 @@
 #include "StateHowToPlay.h"
 
+#include "Assets.h"
+#include "ZOrder.h"
 #include "Game.h"
 #include "inter.h"
 
@@ -9,13 +11,13 @@ StateHowtoplay::StateHowtoplay(Game * p) : State(p)
 {
     lDEBUG << Log::CON("StateHowtoPlay");
 
-    mImgBackground.setWindowAndPath(p, "media/howtoScreen.png");
+    mImgBackground.setWindowAndPath(p, Assets::HowtoScreen);
 
     // Build the title text
     GoSDL::Font fontTitle;
 
     fontTitle.setWindow(p);
-    fontTitle.setPathAndSize("media/fuenteMenu.ttf", 48);
+    fontTitle.setPathAndSize(Assets::FontMenu, 48);
 
     mImgTitle = fontTitle.renderTextWithShadow(_("How to play"), {255, 255, 255, 255}, 1, 2, {0, 0, 0, 128});
 
@@ -23,7 +25,7 @@ StateHowtoplay::StateHowtoplay(Game * p) : State(p)
     GoSDL::Font fontSubtitle;
 
     fontSubtitle.setWindow(p);
-    fontSubtitle.setPathAndSize("media/fuenteMenu.ttf", 23);
+    fontSubtitle.setPathAndSize(Assets::FontMenu, 23);
 
     std::string subtitleText = _("Press any button to go back");
 
@@ -33,7 +35,7 @@ StateHowtoplay::StateHowtoplay(Game * p) : State(p)
     GoSDL::Font fontText;
 
     fontText.setWindow(p);
-    fontText.setPathAndSize("media/fuenteNormal.ttf", 28);
+    fontText.setPathAndSize(Assets::FontNormal, 28);
 
     string bodyText = "";
 
@@ -50,13 +52,13 @@ void StateHowtoplay::update() { }
 
 void StateHowtoplay::draw()
 {
-    mImgBackground.draw(0,0,0);
+    mImgBackground.draw(0, 0, Z::Howto::Background);
 
-    mImgTitle.draw(300 + 470 / 2 - mImgTitle.getWidth() / 2, 20, 1);
+    mImgTitle.draw(300 + 470 / 2 - mImgTitle.getWidth() / 2, 20, Z::Howto::Text);
 
-    mImgSubtitle.draw(30, 550, 1);
+    mImgSubtitle.draw(30, 550, Z::Howto::Text);
 
-    mImgBodyText.draw(310, 110, 1);
+    mImgBodyText.draw(310, 110, Z::Howto::Text);
 }
 
 void StateHowtoplay::buttonDown(SDL_Keycode)

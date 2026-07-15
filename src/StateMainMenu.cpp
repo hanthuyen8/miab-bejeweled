@@ -1,5 +1,7 @@
 #include "StateMainMenu.h"
 
+#include "Assets.h"
+#include "ZOrder.h"
 #include "Game.h"
 #include "log.h"
 #include "inter.h"
@@ -27,19 +29,19 @@ StateMainMenu::StateMainMenu(Game * p) : State(p)
 
     // Init background image
     mImgBackground.setWindow(p);
-    mImgBackground.setPath("media/stateMainMenu/mainMenuBackground.png");
+    mImgBackground.setPath(Assets::MenuBackground);
 
     // Init logo image
     mImgLogo.setWindow(p);
-    mImgLogo.setPath("media/stateMainMenu/mainMenuLogo.png");
+    mImgLogo.setPath(Assets::MenuLogo);
 
     // Init menu highlight image
     mImgHighl.setWindow(p);
-    mImgHighl.setPath("media/stateMainMenu/menuHighlight.png");
+    mImgHighl.setPath(Assets::MenuHighlight);
 
     // Load the font
     mFont.setWindow(p);
-    mFont.setPathAndSize("media/fuenteMenu.ttf", 30);
+    mFont.setPathAndSize(Assets::FontMenu, 30);
 
     // Menu target states
     mMenuTargets = {"stateGameTimetrial", "stateGameEndless", "stateHowtoplay", "stateOptions", "stateQuit"};
@@ -98,14 +100,14 @@ void StateMainMenu::update(){
 void StateMainMenu::draw(){
 
     // Draw the background
-    mImgBackground.draw(0, 0, 1);
+    mImgBackground.draw(0, 0, Z::Menu::Background);
 
     // Calculate the alpha value for the logo
     int logoAlfa = clamp( (int)(255 * (float)mAnimationCurrentStep / mAnimationLogoSteps),
                           0, 255);
 
     // Draw the logo
-    mImgLogo.draw(86, 0, 2, 1, 1, 0, logoAlfa);
+    mImgLogo.draw(86, 0, Z::Menu::Logo, 1, 1, 0, logoAlfa);
 
     // Loop to draw the menu items
     for(size_t i = 0, s = (int) mMenuTargets.size(); i < s; ++i)
@@ -115,11 +117,11 @@ void StateMainMenu::draw(){
             posY = mMenuYStart + i * mMenuYGap;
 
         // Draw the text and the shadow
-        mMenuRenderedTexts[i].draw(posX, posY, 3);
+        mMenuRenderedTexts[i].draw(posX, posY, Z::Menu::Text);
     }
 
     // Draw the menu highlighting
-    mImgHighl.draw(266, mMenuYStart + 5 + mMenuSelectedOption * mMenuYGap, 2);
+    mImgHighl.draw(266, mMenuYStart + 5 + mMenuSelectedOption * mMenuYGap, Z::Menu::Highlight);
 
     // Draw the jewel animation
     mJewelAnimation.draw();

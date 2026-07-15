@@ -1,5 +1,7 @@
 #include "StateGame.h"
 
+#include "Assets.h"
+#include "ZOrder.h"
 #include "Game.h"
 #include "inter.h"
 
@@ -20,7 +22,7 @@ StateGame::StateGame(Game * p) : State(p)
 
     // Load the loading screen
     GoSDL::Font tempLoadingFont;
-    tempLoadingFont.setAll(mGame, "media/fuenteMenu.ttf", 64);
+    tempLoadingFont.setAll(mGame, Assets::FontMenu, 64);
 
     mImgLoadingBanner = tempLoadingFont.renderText(_("Loading..."), {255, 255, 255, 255});
 }
@@ -35,14 +37,14 @@ void StateGame::draw()
     // On this state, show the loading screen and switch the state
     if (mState == eInitial)
     {
-        mImgLoadingBanner.draw(280, 250, 2);
+        mImgLoadingBanner.draw(280, 250, Z::UIPanel);
         setState(eStartLoading);
 
         return;
     }
 
     // In all the other states, the full window is drawn
-    mImgBoard.draw(0,0,0);
+    mImgBoard.draw(0, 0, Z::Board);
 
     // Draw the indicators (buttons and labels)
     mGameIndicators.draw();
@@ -148,7 +150,7 @@ void StateGame::setState (tState state)
 void StateGame::loadResources()
 {
     // Load the background image
-    mImgBoard.setWindowAndPath(mGame, "media/board.png");
+    mImgBoard.setWindowAndPath(mGame, Assets::Board);
 
     mGameIndicators.loadResources();
     mGameBoard.loadResources();

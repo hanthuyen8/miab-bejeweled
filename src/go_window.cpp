@@ -242,10 +242,10 @@ void GoSDL::Window::gameLoop()
         // Set coloring
         SDL_SetTextureColorMod(op->mTexture, op->mColor.r, op->mColor.g, op->mColor.b);
 
-        // Draw the texture
+        // Draw the texture (whole texture, or an atlas sub-region if set)
         int res = SDL_RenderCopyEx(this->mRenderer,
                         op->mTexture,
-                        NULL,
+                        op->mHasSrcRect ? &(op->mSrcRect) : NULL,
                         &(op->mDstRect),
                         op->mAngle,
                         NULL,
@@ -270,7 +270,7 @@ void GoSDL::Window::close()
     mShouldRun = false;
 }
 
-void GoSDL::Window::enqueueDraw(SDL_Texture * texture, SDL_Rect destRect, double angle, float z, Uint8 alpha, SDL_Color color)
+void GoSDL::Window::enqueueDraw(SDL_Texture * texture, SDL_Rect destRect, double angle, float z, Uint8 alpha, SDL_Color color, const SDL_Rect * srcRect)
 {
     // Create the new drawing operation
     GoSDL::DrawingQueueOperation op;
@@ -281,6 +281,16 @@ void GoSDL::Window::enqueueDraw(SDL_Texture * texture, SDL_Rect destRect, double
     op.mAngle = angle;
     op.mAlpha = alpha;
     op.mColor = color;
+
+    if (srcRect)
+    {
+        op.mSrcRect = *srcRect;
+        op.mHasSrcRect = true;
+    }
+    else
+    {
+        op.mHasSrcRect = false;
+    }
 
     // Store it in the container, sorted by depth
     mDrawingQueue.draw(z, op);

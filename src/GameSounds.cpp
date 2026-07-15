@@ -1,15 +1,16 @@
 #include "GameSounds.h"
+#include "Assets.h"
 
 void GameSounds::loadResources()
 {
     options.loadResources();
 
     if (options.getSoundEnabled() && !soundsLoaded) {
-        mSfxMatch1.setSample("media/match1.ogg");
-        mSfxMatch2.setSample("media/match2.ogg");
-        mSfxMatch3.setSample("media/match3.ogg");
-        mSfxSelect.setSample("media/select.ogg");
-        mSfxFall.setSample("media/fall.ogg");
+        mSfxMatch1.setSample(Assets::SfxMatch1);
+        mSfxMatch2.setSample(Assets::SfxMatch2);
+        mSfxMatch3.setSample(Assets::SfxMatch3);
+        mSfxSelect.setSample(Assets::SfxSelect);
+        mSfxFall.setSample(Assets::SfxFall);
 
         soundsLoaded = true;
     } else if (!options.getSoundEnabled() && soundsLoaded) {

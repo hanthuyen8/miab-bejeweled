@@ -32,6 +32,7 @@ using namespace std;
 #include "log.h"
 #include "go_image.h"
 #include "go_font.h"
+#include "Assets.h"
 
 namespace GoSDL {
   class Window;
@@ -44,7 +45,7 @@ public:
 
         // Load the font
         GoSDL::Font tempFont;
-        tempFont.setAll(parentWindow, "media/fuentelcd.ttf", 60);
+        tempFont.setAll(parentWindow, Assets::FontLcd, 60);
 
         // Build the image
         mScoreImage = tempFont.renderText(std::to_string(score), {255, 255, 255, 255});

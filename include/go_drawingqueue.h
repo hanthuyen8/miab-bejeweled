@@ -34,6 +34,8 @@ namespace GoSDL {
     {
         SDL_Texture * mTexture;
         SDL_Rect mDstRect;
+        SDL_Rect mSrcRect;      // sub-region of mTexture (atlas frame)
+        bool mHasSrcRect;       // false → draw the whole texture
         double mAngle;
         Uint8 mAlpha;
         SDL_Color mColor;

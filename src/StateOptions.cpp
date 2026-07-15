@@ -1,5 +1,7 @@
 #include "StateOptions.h"
 
+#include "Assets.h"
+#include "ZOrder.h"
 #include "Game.h"
 #include "log.h"
 #include "inter.h"
@@ -27,15 +29,15 @@ StateOptions::StateOptions(Game * p) : State(p)
 
     // Init background image
     mImgBackground.setWindow(p);
-    mImgBackground.setPath("media/stateMainMenu/mainMenuBackground.png");
+    mImgBackground.setPath(Assets::MenuBackground);
 
     // Init menu highlight image
     mImgHighl.setWindow(p);
-    mImgHighl.setPath("media/stateMainMenu/menuHighlight.png");
+    mImgHighl.setPath(Assets::MenuHighlight);
 
     // Load the font
     mFont.setWindow(p);
-    mFont.setPathAndSize("media/fuenteMenu.ttf", 30);
+    mFont.setPathAndSize(Assets::FontMenu, 30);
 
     // Menu target states
     #ifdef __vita__
@@ -70,7 +72,7 @@ void StateOptions::update(){
 void StateOptions::draw(){
 
     // Draw the background
-    mImgBackground.draw(0, 0, 1);
+    mImgBackground.draw(0, 0, Z::Menu::Background);
 
     // Loop to draw the menu items
     for(size_t i = 0, s = (int) mMenuOptions.size(); i < s; ++i)
@@ -80,11 +82,11 @@ void StateOptions::draw(){
             posY = mMenuYStart + i * mMenuYGap;
 
         // Draw the text and the shadow
-        mMenuRenderedTexts[i].draw(posX, posY, 3);
+        mMenuRenderedTexts[i].draw(posX, posY, Z::Menu::Text);
     }
 
     // Draw the menu highlighting
-    mImgHighl.draw(266, mMenuYStart + 5 + mMenuSelectedOption * mMenuYGap, 2);
+    mImgHighl.draw(266, mMenuYStart + 5 + mMenuSelectedOption * mMenuYGap, Z::Menu::Highlight);
 }
 
 void StateOptions::buttonDown(SDL_Keycode button)

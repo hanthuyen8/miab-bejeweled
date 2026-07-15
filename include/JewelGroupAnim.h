@@ -7,19 +7,25 @@
 
 #include "go_window.h"
 #include "go_image.h"
+#include "go_textureatlas.h"
+#include "Assets.h"
+#include "ZOrder.h"
 
 class JewelGroupAnim
 {
 public:
     void loadResources (GoSDL::Window * w)
     {
-        imgGems[0].setWindowAndPath(w, "media/gemWhite.png");
-        imgGems[1].setWindowAndPath(w, "media/gemRed.png");
-        imgGems[2].setWindowAndPath(w, "media/gemPurple.png");
-        imgGems[3].setWindowAndPath(w, "media/gemOrange.png");
-        imgGems[4].setWindowAndPath(w, "media/gemGreen.png");
-        imgGems[5].setWindowAndPath(w, "media/gemYellow.png");
-        imgGems[6].setWindowAndPath(w, "media/gemBlue.png");
+        // Gems come from the shared atlas (same texture as the in-game board)
+        GoSDL::TextureAtlas atlas;
+        atlas.load(w, Assets::AtlasImage, Assets::AtlasData);
+        atlas.setImage(imgGems[0], Assets::Sprite::GemWhite);
+        atlas.setImage(imgGems[1], Assets::Sprite::GemRed);
+        atlas.setImage(imgGems[2], Assets::Sprite::GemPurple);
+        atlas.setImage(imgGems[3], Assets::Sprite::GemOrange);
+        atlas.setImage(imgGems[4], Assets::Sprite::GemGreen);
+        atlas.setImage(imgGems[5], Assets::Sprite::GemYellow);
+        atlas.setImage(imgGems[6], Assets::Sprite::GemBlue);
 
         for (int i = 0; i < 7; ++i)
         {
@@ -51,9 +57,9 @@ public:
                                        600.f,
                                        (float) posFinalY - 600.f,
                                        (float) animationTotalSteps),
-                                   2.f);
+                                   Z::Menu::Jewel);
             }else{
-                imgGems[i].draw(posX[i], posFinalY, 2);
+                imgGems[i].draw(posX[i], posFinalY, Z::Menu::Jewel);
             }
         }
     }
