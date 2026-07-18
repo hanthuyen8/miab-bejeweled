@@ -136,6 +136,18 @@ private:
     int mSelectorX = 3;
     int mSelectorY = 3;
 
+    // Continuous rotation angle for the (circular) selector art, in degrees
+    double mSelectorAngle = 0;
+
+    // Phase accumulator driving the selector's gentle fade in/out pulse
+    double mSelectorPulsePhase = 0;
+
+    // Ticks at the last update(), used to advance the selector animation by
+    // elapsed real time rather than a fixed step per call (update() runs on
+    // the browser's requestAnimationFrame on web, whose cadence isn't exactly
+    // steady, so a fixed per-call step reads as stutter)
+    Uint32 mSelectorLastTicks = 0;
+
     // Track if a hint is used, to prevent score increases when so
     bool mHintUsed = false;
 };

@@ -20,7 +20,7 @@
 },
 "digit0.png":
 {
-	"frame": {"x":68,"y":250,"w":45,"h":90},
+	"frame": {"x":202,"y":148,"w":45,"h":90},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":45,"h":90},
@@ -29,7 +29,7 @@
 },
 "digit1.png":
 {
-	"frame": {"x":202,"y":148,"w":29,"h":90},
+	"frame": {"x":1,"y":237,"w":29,"h":90},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":29,"h":90},
@@ -47,7 +47,7 @@
 },
 "digit3.png":
 {
-	"frame": {"x":115,"y":250,"w":39,"h":90},
+	"frame": {"x":119,"y":250,"w":39,"h":90},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":39,"h":90},
@@ -56,7 +56,7 @@
 },
 "digit4.png":
 {
-	"frame": {"x":156,"y":250,"w":43,"h":90},
+	"frame": {"x":202,"y":332,"w":43,"h":90},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":43,"h":90},
@@ -65,7 +65,7 @@
 },
 "digit5.png":
 {
-	"frame": {"x":1,"y":304,"w":42,"h":90},
+	"frame": {"x":1,"y":337,"w":42,"h":90},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":42,"h":90},
@@ -74,7 +74,7 @@
 },
 "digit6.png":
 {
-	"frame": {"x":201,"y":332,"w":40,"h":90},
+	"frame": {"x":160,"y":250,"w":40,"h":90},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":90},
@@ -83,7 +83,7 @@
 },
 "digit7.png":
 {
-	"frame": {"x":45,"y":342,"w":40,"h":90},
+	"frame": {"x":45,"y":337,"w":40,"h":90},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":90},
@@ -227,11 +227,11 @@
 },
 "selector.png":
 {
-	"frame": {"x":1,"y":237,"w":65,"h":65},
+	"frame": {"x":32,"y":250,"w":85,"h":85},
 	"rotated": false,
 	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":65,"h":65},
-	"sourceSize": {"w":65,"h":65},
+	"spriteSourceSize": {"x":0,"y":0,"w":85,"h":85},
+	"sourceSize": {"w":85,"h":85},
 	"pivot": {"x":0.5,"y":0.5}
 },
 "timeBackground.png":
@@ -248,8 +248,8 @@
 	"version": "1.0",
 	"image": "atlas.png",
 	"format": "RGBA8888",
-	"size": {"w":247,"h":543},
+	"size": {"w":248,"h":543},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:0ac98ac82d7c3ed27c5d5c69fbb40519:67f806568cad46317f15dad440eda18d:cbce6b53f0f49e0bf15173c25c41f876$"
+	"smartupdate": "$TexturePacker:SmartUpdate:3ee16dc88b71db42dbe6787ae3c7b032:e888f10f36478a913742bdcd98cee008:cbce6b53f0f49e0bf15173c25c41f876$"
 }
 }

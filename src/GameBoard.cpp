@@ -6,6 +6,7 @@
 #include "Assets.h"
 #include "ZOrder.h"
 #include "MiabSDK.h"
+#include <cmath>
 #include <functional>
 
 using namespace std::placeholders;
@@ -108,6 +109,18 @@ void GameBoard::loadResources()
 
 void GameBoard::update()
 {
+    // Keep the selector spinning and gently pulsing regardless of state,
+    // advancing by elapsed real time so the motion stays smooth even when
+    // update() isn't called at a perfectly steady rate (see GameBoard.h).
+    Uint32 nowTicks = SDL_GetTicks();
+    Uint32 deltaMs = mSelectorLastTicks == 0 ? 16 : nowTicks - mSelectorLastTicks;
+    if (deltaMs > 100) deltaMs = 100; // clamp huge gaps (e.g. tab was backgrounded)
+    mSelectorLastTicks = nowTicks;
+    double deltaSteps = deltaMs / 16.6667; // relative to a 60fps reference step
+
+    mSelectorAngle = std::fmod(mSelectorAngle + 1.0 * deltaSteps, 360.0);
+    mSelectorPulsePhase += 0.025 * deltaSteps;
+
     // Default state, do nothing
     if (mState == eSteady)
     {
@@ -314,18 +327,26 @@ void GameBoard::draw()
         }
     }
 
+    // Gentle continuous fade in/out, kept within a subtle, visible range
+    Uint8 selectorAlpha = Uint8(200 + 55 * std::sin(mSelectorPulsePhase));
+
+    // The selector art is bigger than a gem cell (65px) so its ring shape
+    // isn't clipped by the cell edges; center it on the cell by offsetting
+    // by half the size difference.
+    int selectorInset = (mImgSelector.getWidth() - 65) / 2;
+
     // Draw the selector over that gem
     mImgSelector.draw(
-        241 + mSelectorX * 65,
-        41 + mSelectorY * 65,
-        Z::Selector);
+        241 + mSelectorX * 65 - selectorInset,
+        41 + mSelectorY * 65 - selectorInset,
+        Z::Selector, 1, 1, mSelectorAngle, selectorAlpha);
 
     // Draw the selector if a gem has been selected
     if (mState == eGemSelected)
     {
-        mImgSelector.draw(241 + mSelectedSquareFirst.x * 65,
-              41 + mSelectedSquareFirst.y * 65,
-              Z::Selector, 1, 1, 0, 255, {0, 255, 255, 255});
+        mImgSelector.draw(241 + mSelectedSquareFirst.x * 65 - selectorInset,
+              41 + mSelectedSquareFirst.y * 65 - selectorInset,
+              Z::Selector, 1, 1, mSelectorAngle, selectorAlpha, {0, 255, 255, 255});
     }
 
     // Draw the hint
