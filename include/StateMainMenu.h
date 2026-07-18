@@ -86,6 +86,9 @@ private:
     /// Font for the menu entries
     GoSDL::Font mFont;
 
+    /// Larger font used for each entry's drop-cap first letter
+    GoSDL::Font mFontDropCap;
+
     /// Class for the animation of the decorating jewels
     JewelGroupAnim mJewelAnimation;
 
@@ -94,7 +97,11 @@ private:
 
     /// List of menu options.
     vector<string> mMenuTargets;
-    vector<GoSDL::Image> mMenuRenderedTexts;
+
+    /// Each entry's first letter (rendered with mFontDropCap) and the
+    /// remaining text (rendered with mFont), drawn side by side
+    vector<GoSDL::Image> mMenuDropCapTexts;
+    vector<GoSDL::Image> mMenuRestTexts;
 
     /// It gets executed when the user choses an option. It changes the state
     ///  to the proper one.

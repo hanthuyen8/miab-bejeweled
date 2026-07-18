@@ -29,6 +29,7 @@ namespace Assets {
     constexpr const char * FontLcd    = "media/fonts/fuentelcd.ttf";
     constexpr const char * FontNormal = "media/fonts/fuenteNormal.ttf";
     constexpr const char * FontMenu   = "media/fonts/fuenteMenu.ttf";
+    constexpr const char * FontButton = "media/fonts/fuenteButton.ttf";
 
     // --- Sounds ---
     constexpr const char * SfxMatch1 = "media/sounds/match1.ogg";

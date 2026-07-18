@@ -62,6 +62,12 @@ int GoSDL::Font::getTextWidth(std::string text) {
     return w;
 }
 
+int GoSDL::Font::getAscent() {
+    if (!mFont) return 0;
+
+    return TTF_FontAscent(mFont);
+}
+
 void GoSDL::Font::setWindow (Window * parentWindow) {
     mParentWindow = parentWindow;
 }

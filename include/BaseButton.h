@@ -55,6 +55,9 @@ public:
 
     void draw(int x, int y, double z);
 
+    /// Height of the button background, used to lay out stacked buttons
+    int getHeight() { return mImgBackground.getHeight(); }
+
     /**
      * Checks if the button was pressed. It uses the last drawing position to
      * check if the mouse was within boundaries.

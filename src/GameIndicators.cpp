@@ -44,9 +44,9 @@ void GameIndicators::loadResources()
     atlas.setImage(mImgScoreBackground, Assets::Sprite::ScoreBackground);
 
     // Buttons
-    std::string mHintButtonText = _("Show hint");
-    std::string mResetButtonText = _("Reset game");
-    std::string mExitButtonText = _("Exit");
+    std::string mHintButtonText = _("HINT");
+    std::string mResetButtonText = _("RESET");
+    std::string mExitButtonText = _("EXIT");
 
     #ifdef __vita__
         mHintButtonText += std::string(" (/\\)");
@@ -116,13 +116,16 @@ void GameIndicators::updateTime (double time)
 
 void GameIndicators::draw()
 {
-    // Vertical initial position for the buttons
-    int vertButStart = 407;
+    // Vertical initial position for the buttons, and the gap kept between
+    // each stacked button (based on the current button art's height)
+    int vertButStart = 356;
+    int buttonSpacing = mHintButton.getHeight() + 5;
 
     // Draw the buttons
-    mHintButton.draw(17, vertButStart, Z::UIPanel);
-    mResetButton.draw(17, vertButStart + 47, Z::UIPanel);
-    mExitButton.draw(17, 538, Z::UIPanel);
+    int horizButPos = 45;
+    mHintButton.draw(horizButPos, vertButStart, Z::UIPanel);
+    mResetButton.draw(horizButPos, vertButStart + buttonSpacing, Z::UIPanel);
+    mExitButton.draw(horizButPos, vertButStart + 2 * buttonSpacing, Z::UIPanel);
 
     // LCD colour shared by the score and time digits
     const SDL_Color lcdColor = {78, 193, 190, 255};
