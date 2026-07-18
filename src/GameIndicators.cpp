@@ -27,11 +27,11 @@ void GameIndicators::loadResources()
 
     // Font to render some headers
     GoSDL::Font tempHeaderFont;
-    tempHeaderFont.setAll(mGame, Assets::FontNormal, 37);
+    tempHeaderFont.setAll(mGame, Assets::FontButton, 20);
 
-    mImgScoreHeader = tempHeaderFont.renderTextWithShadow(_("score"), {160, 169, 255, 255}, 1, 1, {0, 0, 0, 128});
+    mImgScoreHeader = tempHeaderFont.renderTextWithShadow(_("SCORE"), {229, 216, 196, 255}, 1, 1, {0, 0, 0, 128});
 
-    mImgTimeHeader = tempHeaderFont.renderTextWithShadow(_("time left"), {160, 169, 255, 255}, 1, 1, {0, 0, 0, 128});
+    mImgTimeHeader = tempHeaderFont.renderTextWithShadow(_("TIME LEFT"), {229, 216, 196, 255}, 1, 1, {0, 0, 0, 128});
 
     // Background images come from the shared atlas so they batch together
     GoSDL::TextureAtlas atlas;
@@ -44,19 +44,9 @@ void GameIndicators::loadResources()
     atlas.setImage(mImgScoreBackground, Assets::Sprite::ScoreBackground);
 
     // Buttons
-    std::string mHintButtonText = _("HINT");
-    std::string mResetButtonText = _("RESET");
-    std::string mExitButtonText = _("EXIT");
-
-    #ifdef __vita__
-        mHintButtonText += std::string(" (/\\)");
-        mResetButtonText += std::string(" (SEL)");
-        mExitButtonText += std::string(" (START)");
-    #endif
-
-    mHintButton.set(mGame,  mHintButtonText.c_str(), Assets::Sprite::IconHint);
-    mResetButton.set(mGame, mResetButtonText.c_str(), Assets::Sprite::IconRestart);
-    mExitButton.set(mGame, mExitButtonText.c_str(), Assets::Sprite::IconExit);
+    mHintButton.set(mGame,  _("HINT"), Assets::Sprite::IconHint);
+    mResetButton.set(mGame, _("RESET"), Assets::Sprite::IconRestart);
+    mExitButton.set(mGame, _("EXIT"), Assets::Sprite::IconExit);
 
     // Music
     options.loadResources();
@@ -128,23 +118,44 @@ void GameIndicators::draw()
     mExitButton.draw(horizButPos, vertButStart + 2 * buttonSpacing, Z::UIPanel);
 
     // LCD colour shared by the score and time digits
-    const SDL_Color lcdColor = {78, 193, 190, 255};
-    const int scoreFontSize = 33;
-    const int timeFontSize = 62;
+    const SDL_Color lcdColor = {229, 216, 196, 255};
+    const int scoreFontSize = 30;
+    const int timeFontSize = 30;
+
+    // Score label, score background, time label and time background are
+    // stacked top to bottom starting at y=170, sized off the actual image
+    // heights so the layout self-adjusts if any of these assets change.
+    int panelX = 45;
+    int panelWidth = 150;
+    int cursorY = 150;
+    int groupGap = 2;
 
     // Draw the score. The number sits on top of its background, so it must
     // use a higher z than the background (same convention as BaseButton) —
     // the drawing queue only guarantees ordering by z, not by insertion order.
-    // The number is right-aligned to x=197.
-    mImgScoreBackground.draw(17, 124, Z::UIPanel);
-    mImgScoreHeader.draw(17 + mImgScoreBackground.getWidth() / 2 - mImgScoreHeader.getWidth() / 2, 84, Z::UIText);
-    mNumbers.draw(mScoreText, 197 - mNumbers.width(mScoreText, scoreFontSize), 127, Z::UIText, scoreFontSize, lcdColor);
+    // The label is centered on the whole panel width, not just the background.
+    mImgScoreHeader.draw(panelX + panelWidth / 2 - mImgScoreHeader.getWidth() / 2, cursorY, Z::UIText);
+    cursorY += mImgScoreHeader.getHeight() + groupGap;
+
+    int scoreBgY = cursorY;
+    mImgScoreBackground.draw(panelX, scoreBgY, Z::UIPanel);
+    mNumbers.draw(mScoreText,
+        panelX + (mImgScoreBackground.getWidth() - mNumbers.width(mScoreText, scoreFontSize)) / 2,
+        scoreBgY + (mImgScoreBackground.getHeight() - mNumbers.height(scoreFontSize)) / 2,
+        Z::UIText, scoreFontSize, lcdColor);
+    cursorY += mImgScoreBackground.getHeight() + groupGap;
 
     // Draw the time
     if (mTimeEnabled) {
-        mImgTimeBackground.draw(17, 230, Z::UIPanel);
-        mImgTimeHeader . draw(17 + mImgTimeBackground.getWidth() / 2 - mImgTimeHeader.getWidth() / 2, 190, Z::UIText);
-        mNumbers.draw(mTimeText, 190 - mNumbers.width(mTimeText, timeFontSize), 232, Z::UIText, timeFontSize, lcdColor);
+        mImgTimeHeader.draw(panelX + panelWidth / 2 - mImgTimeHeader.getWidth() / 2, cursorY, Z::UIText);
+        cursorY += mImgTimeHeader.getHeight() + groupGap;
+
+        int timeBgY = cursorY;
+        mImgTimeBackground.draw(panelX, timeBgY, Z::UIPanel);
+        mNumbers.draw(mTimeText,
+            panelX + (mImgTimeBackground.getWidth() - mNumbers.width(mTimeText, timeFontSize)) / 2,
+            timeBgY + (mImgTimeBackground.getHeight() - mNumbers.height(timeFontSize)) / 2,
+            Z::UIText, timeFontSize, lcdColor);
     }
 }
 

@@ -53,11 +53,9 @@ void Game::update ()
 
 void Game::draw ()
 {
-    #ifndef __vita__
-        if (getMouseActive()) {
-            mMouseCursor.draw(getMouseX(), getMouseY(), Z::Cursor);
-        }
-    #endif
+    if (getMouseActive()) {
+        mMouseCursor.draw(getMouseX(), getMouseY(), Z::Cursor);
+    }
 
     if (mCurrentState)
         mCurrentState -> draw();

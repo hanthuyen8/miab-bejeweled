@@ -43,12 +43,19 @@ public:
         atlas.setImage(mColon, Assets::Sprite::Colon);
 
         mGlyphWidth = mDigits[0].getWidth();
+        mGlyphHeight = mDigits[0].getHeight();
     }
 
     /// Pixel width of `text` rendered at the given font size.
     int width(const std::string & text, int fontSize) const
     {
         return int(text.size() * mGlyphWidth * scaleFor(fontSize));
+    }
+
+    /// Pixel height of a glyph rendered at the given font size.
+    int height(int fontSize) const
+    {
+        return int(mGlyphHeight * scaleFor(fontSize));
     }
 
     /// Draw `text` with its left edge at (x, y), matching a TTF render at
@@ -87,6 +94,7 @@ private:
     GoSDL::Image mDigits[10];
     GoSDL::Image mColon;
     int mGlyphWidth = 0;
+    int mGlyphHeight = 0;
 };
 
 #endif /* _BITMAPNUMBER_H_ */

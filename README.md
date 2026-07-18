@@ -3,7 +3,7 @@
     <img src="https://raw.githubusercontent.com/JoseTomasTocino/freegemas/static/images/header_gems.png"><br>
 </p>
 
-__Seajeweled__ is an open source version of the well known Bejeweled, for GNU/Linux, Windows, Mac and Playstation Vita. It's written in C++ using [SDL2](https://www.libsdl.org/). It is a fork of [Freegemas](https://github.com/JoseTomasTocino/freegemas) by José Tomás Tocino García. In the past it used Gosu instead of SDL2, and the old repository can be found at [Google Code](https://code.google.com/archive/p/freegemas/).
+__Seajeweled__ is an open source version of the well known Bejeweled, for GNU/Linux, Windows and Mac. It's written in C++ using [SDL2](https://www.libsdl.org/). It is a fork of [Freegemas](https://github.com/JoseTomasTocino/freegemas) by José Tomás Tocino García. In the past it used Gosu instead of SDL2, and the old repository can be found at [Google Code](https://code.google.com/archive/p/freegemas/).
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/JoseTomasTocino/freegemas/static/images/screenshot_1.png">
@@ -59,24 +59,6 @@ Do an out-of-source compilation and run the program:
     cmake ..
     make
     ./seajeweled
-
-## Installation on Playstation Vita
-
-For building for Vita, the [Vita SDK](https://vitasdk.org) should be installed.
-
-After that, clone the repo:
-
-    git clone https://github.com/JoseTomasTocino/freegemas.git seajeweled
-
-Do an out-of-source compilation:
-
-    cd seajeweled
-    mkdir vita
-    cd vita
-    cmake -DCMAKE_TOOLCHAIN_FILE="${VITASDK}/share/vita.toolchain.cmake" ..
-    make
-
-Now ``seajeweled.vpk`` can be tranfered and installed on Vita.
 
 ## Music licensing
 

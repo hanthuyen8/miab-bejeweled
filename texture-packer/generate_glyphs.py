@@ -23,7 +23,7 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont
 
-FONT_PATH = "media/fonts/fuentelcd.ttf"
+FONT_PATH = "assets/fonts/Quicksand-Bold.ttf"
 SIZE = 72
 OUT_DIR = "assets/glyphs/lcd"
 

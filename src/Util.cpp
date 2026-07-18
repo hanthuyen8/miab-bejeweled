@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <SDL.h>
 
-#if !defined(_WIN32) && !defined(__vita__)
+#if !defined(_WIN32)
     #include <dirent.h>
 #endif
 
@@ -18,7 +18,7 @@ std::string getBasePath()
         SDL_free(basePath);
     }
 
-    #if !defined(_WIN32) && !defined(__vita__)
+    #if !defined(_WIN32)
         // Check if game is installed system wide
         DIR* dir = opendir(std::string(basePathStr + "../share/seajeweled/").c_str());
         if (dir) {

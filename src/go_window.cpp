@@ -35,11 +35,7 @@ GoSDL::Window::Window (unsigned width, unsigned height, std::string caption, Uin
     // Create window
     mWindow = SDL_CreateWindow( caption.c_str(),
                                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                #ifdef __vita__
-                                    960, 544,
-                                #else
-                                    width, height,
-                                #endif
+                                width, height,
                                 SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI );
 
     // If window could not be created, throw an error

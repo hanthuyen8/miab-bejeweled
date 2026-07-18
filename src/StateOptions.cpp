@@ -40,11 +40,7 @@ StateOptions::StateOptions(Game * p) : State(p)
     mFont.setPathAndSize(Assets::FontMenu, 30);
 
     // Menu target states
-    #ifdef __vita__
-        mMenuOptions = {"setMusic", "setSound", "back"};
-    #else
-        mMenuOptions = {"setMusic", "setSound", "setFullscreen", "back"};
-    #endif
+    mMenuOptions = {"setMusic", "setSound", "setFullscreen", "back"};
 
     updateButtonTexts();
 
@@ -182,9 +178,7 @@ void StateOptions::updateButtonTexts()
     SDL_Color menuTextColor = {255, 255, 255, 255}, menuShadowColor = {0,0,0, 128};
     renderedTexts.push_back(mFont.renderTextWithShadow(musicText, menuTextColor, 0, 2, menuShadowColor));
     renderedTexts.push_back(mFont.renderTextWithShadow(soundText, menuTextColor, 0, 2, menuShadowColor));
-    #ifndef __vita__
-        renderedTexts.push_back(mFont.renderTextWithShadow(fullscreenText, menuTextColor, 0, 2, menuShadowColor));
-    #endif
+    renderedTexts.push_back(mFont.renderTextWithShadow(fullscreenText, menuTextColor, 0, 2, menuShadowColor));
     renderedTexts.push_back(mFont.renderTextWithShadow(_("Back"), menuTextColor, 0, 2, menuShadowColor));
 
     mMenuRenderedTexts.swap(renderedTexts);

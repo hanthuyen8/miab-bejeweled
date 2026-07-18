@@ -28,7 +28,7 @@ else()
 endif()
 
 set(BUILD_STATIC_DEFAULT OFF)
-if(WIN32 OR VITA)
+if(WIN32)
     set(BUILD_STATIC_DEFAULT ON)
 endif()
 option(BUILD_STATIC "Build a static binary" ${BUILD_STATIC_DEFAULT})
@@ -98,26 +98,7 @@ else()
     )
 endif()
 
-if (VITA)
-	include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
-
-	# Project start
-	set(VITA_APPNAME Seajeweled)
-	set(VITA_TITLEID "SJWL00001")
-	set(VITA_VERSION "22.02")
-
-	# Optional. You can specify more param.sfo flags this way.
-	set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
-
-	vita_create_self(seajeweled.self seajeweled)
-
-	vita_create_vpk(seajeweled.vpk ${VITA_TITLEID} seajeweled.self
-		    VERSION ${VITA_VERSION}
-		    NAME ${VITA_APPNAME}
-		    FILE platform/vita/sce_sys sce_sys
-		    FILE media media
-	)
-ELSEIF(WIN32)
+IF(WIN32)
 	# Nothing to do
 ELSEIF(EMSCRIPTEN)
 	# Nothing to do: assets are bundled via --preload-file above, and the
