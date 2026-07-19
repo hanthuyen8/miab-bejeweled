@@ -23,9 +23,9 @@ media/                      ← runtime assets (shipped / preloaded)
         howtoScreen.png     (800×600, màn hướng dẫn)
         handCursor.png      (con trỏ chuột)
     fonts/
-        fuentelcd.ttf       (số điểm/thời gian — LCD)
         fuenteNormal.ttf    (body text)
-        fuenteMenu.ttf      (tiêu đề/menu)
+        fuenteMenu.ttf      (tiêu đề/menu — Quicksand-SemiBold)
+        fuenteButton.ttf    (caption nút, label score/time, số điểm ScoreTable)
     sounds/
         match1.ogg, match2.ogg, match3.ogg
         select.ogg, fall.ogg, music.ogg
@@ -41,11 +41,23 @@ assets/                     ← source art (NOT shipped, TexturePacker inputs)
         iconHint/Restart/Exit.png                          (40×41)
         buttonBackground.png, scoreBackground.png, timeBackground.png
         partc1.png, partc2.png                             (108×108)
+    glyphs/lcd/             ← chữ số bitmap 0-9 + ':' cho atlas
+                              (thư mục còn tên "lcd" nhưng nay bake từ
+                               Quicksand-Bold — xem Ghi chú)
+    fonts/
+        Quicksand-Bold.ttf  ← CHỈ để bake glyph, không ship runtime
+    photoshop/              ← file export gốc trước khi resize
+
+platform/
+    web/shell.html          ← shell HTML của Emscripten (--shell-file), thêm
+                              hotkey F9 gọi Spector.js capture
+    unix/, windows/         ← icon & metadata đóng gói desktop
 
 texture-packer/
     atlas.tps               ← project TexturePacker:
-                              source = ../assets/sprites/*.png
+                              source = ../assets/sprites/*.png + ../assets/glyphs/lcd/*.png
                               output = ../media/atlas.png + ../media/atlas.json
+    generate_glyphs.py      ← render glyph số từ Quicksand-Bold ra PNG
 ```
 
 ## Quy ước code
@@ -102,4 +114,13 @@ texture cache trong `GoSDL::Image`, mọi Image nạp cùng file atlas chia sẻ
 - Thư mục `docs/` chứa kế hoạch/báo cáo tối ưu (user tracking công việc ở
   đây). Xem `performance-optimization-plan.md` và các `stepN-*-report.md`.
 - Z-order layering đã gom vào `include/ZOrder.h` (xem mục "Draw depth" ở trên).
+- **Font LCD đã bị gỡ bỏ.** `fuentelcd.ttf` không còn trong repo; chữ số giờ
+  vẽ bằng glyph bitmap trong atlas (bake từ Quicksand-Bold), số điểm màn kết
+  thúc dùng `fuenteButton.ttf`. Thư mục `assets/glyphs/lcd/` vẫn giữ tên cũ vì
+  đổi tên sẽ phải sửa cả `generate_glyphs.py` lẫn source list trong
+  `atlas.tps` — thuần cosmetic, chưa làm.
+- **Sửa `platform/web/shell.html` thì phải relink.** Shell là link input nhưng
+  CMake không tự suy ra từ flag `--shell-file`, nên `CMakeLists.txt` khai báo
+  `LINK_DEPENDS` cho nó. Cùng loại bẫy với `media/` (xem
+  [ui-visual-polish-report.md](ui-visual-polish-report.md)).
 ```

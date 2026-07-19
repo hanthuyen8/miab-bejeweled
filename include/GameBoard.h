@@ -2,6 +2,7 @@
 #define GAME_BOARD_H
 
 #include "GameHint.h"
+#include "GemShine.h"
 
 #include "Board.h"
 #include "FloatingScore.h"
@@ -110,6 +111,12 @@ private:
     GoSDL::Image mImgGreen;
     GoSDL::Image mImgYellow;
     GoSDL::Image mImgBlue;
+
+    /// Pre-rendered sweeping highlight for the gems above
+    GemShine mGemShine;
+
+    /// Atlas glyphs the floating scores draw themselves with
+    BitmapNumber mNumbers;
 
     /// Animation current step
     int mAnimationCurrentStep = 0;

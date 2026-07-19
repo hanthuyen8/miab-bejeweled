@@ -26,7 +26,6 @@ namespace Assets {
     constexpr const char * MenuHighlight  = "media/menu/menuHighlight.png";
 
     // --- Fonts ---
-    constexpr const char * FontLcd    = "media/fonts/fuentelcd.ttf";
     constexpr const char * FontNormal = "media/fonts/fuenteNormal.ttf";
     constexpr const char * FontMenu   = "media/fonts/fuenteMenu.ttf";
     constexpr const char * FontButton = "media/fonts/fuenteButton.ttf";
@@ -61,7 +60,8 @@ namespace Assets {
         constexpr const char * IconRestart = "iconRestart.png";
         constexpr const char * IconExit    = "iconExit.png";
 
-        // LCD bitmap-font glyphs (fuentelcd, baked white @72px) for score/time
+        // Bitmap-font glyphs (Quicksand-Bold, baked white @72px). Used by the
+        // score/time readouts and by the floating scores.
         constexpr const char * Digit0 = "digit0.png";
         constexpr const char * Digit1 = "digit1.png";
         constexpr const char * Digit2 = "digit2.png";

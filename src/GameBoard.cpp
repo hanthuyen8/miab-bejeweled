@@ -11,6 +11,24 @@
 
 using namespace std::placeholders;
 
+namespace {
+    // How often the highlight crosses the board
+    constexpr Uint32 kGlintCycleMs = 4000;
+
+    // The one speed knob: how long the light takes to travel one cell width.
+    // Everything else below is derived from it, because the highlight has to be
+    // a single straight line crossing the board — if the speed inside a gem and
+    // the speed from gem to gem are set independently they drift apart, and it
+    // stops reading as one light and starts reading as gems blinking on their
+    // own. Smaller is faster.
+    constexpr Uint32 kGlintCellTravelMs = 160;
+
+    // One sweep covers the cell plus the run-up and run-out either side of it,
+    // at that same speed.
+    constexpr Uint32 kGlintSweepMs =
+        kGlintCellTravelMs * GemShine::kSweepTravel / GemShine::kCellSize;
+}
+
 
 void GameBoard::setGame(Game * game, StateGame * stateGame)
 {
@@ -93,12 +111,30 @@ void GameBoard::loadResources()
     atlas.setImage(mImgYellow, Assets::Sprite::GemYellow);
     atlas.setImage(mImgBlue,   Assets::Sprite::GemBlue);
 
+    // Re-point the gems at the pre-composited sheet holding the sweeping
+    // highlight. It has its own texture, so gems no longer batch together with
+    // the rest of the atlas — but they still share one texture among
+    // themselves, so the number of draw calls is unchanged.
+    if (mGemShine.bake(mGame, atlas))
+    {
+        mGemShine.attach(mImgWhite,  GemShine::White);
+        mGemShine.attach(mImgRed,    GemShine::Red);
+        mGemShine.attach(mImgPurple, GemShine::Purple);
+        mGemShine.attach(mImgOrange, GemShine::Orange);
+        mGemShine.attach(mImgGreen,  GemShine::Green);
+        mGemShine.attach(mImgYellow, GemShine::Yellow);
+        mGemShine.attach(mImgBlue,   GemShine::Blue);
+    }
+
     // The square selector
     atlas.setImage(mImgSelector, Assets::Sprite::Selector);
 
     // The particles
     atlas.setImage(mImgParticle1, Assets::Sprite::Particle1);
     atlas.setImage(mImgParticle2, Assets::Sprite::Particle2);
+
+    // Glyphs the floating scores draw with, from the same atlas
+    mNumbers.loadResources(mGame);
 
     // Initialise the hint
     mHint.setWindow(mGame);
@@ -372,6 +408,12 @@ void GameBoard::draw()
     // On to the gem drawing procedure. Let's have a pointer to the image of each gem
     GoSDL::Image * img = NULL;
 
+    // The highlight only sweeps while the board is at rest: during a swap or a
+    // cascade the gems are already carrying the eye, and a second moving
+    // highlight on top of that just reads as noise.
+    Uint32 nowTicks = SDL_GetTicks();
+    bool glintActive = (mState == eSteady || mState == eGemSelected);
+
     // Top left position of the board
     int posX = 241;
     int posY = 41;
@@ -382,6 +424,7 @@ void GameBoard::draw()
         {
             // Reset the pointer
             img = NULL;
+            GemShine::Gem gemColour = GemShine::White;
 
             // Check the type of each square and
             // save the proper image in the img pointer
@@ -389,30 +432,37 @@ void GameBoard::draw()
             {
                 case sqWhite:
                 img = &mImgWhite;
+                gemColour = GemShine::White;
                 break;
 
                 case sqRed:
                 img = &mImgRed;
+                gemColour = GemShine::Red;
                 break;
 
                 case sqPurple:
                 img = &mImgPurple;
+                gemColour = GemShine::Purple;
                 break;
 
                 case sqOrange:
                 img = &mImgOrange;
+                gemColour = GemShine::Orange;
                 break;
 
                 case sqGreen:
                 img = &mImgGreen;
+                gemColour = GemShine::Green;
                 break;
 
                 case sqYellow:
                 img = &mImgYellow;
+                gemColour = GemShine::Yellow;
                 break;
 
                 case sqBlue:
                 img = &mImgBlue;
+                gemColour = GemShine::Blue;
                 break;
 
                 case sqEmpty:
@@ -511,6 +561,40 @@ void GameBoard::draw()
             {
                 continue;
             }
+
+            // Send a highlight sweeping across the gem every so often. Each
+            // cell gets its own offset into the cycle, otherwise the whole
+            // board glints in unison and reads as a screen-wide flash. Only
+            // the source rectangle changes, so this costs nothing extra.
+            int glintFrame = 0;
+
+            if (glintActive)
+            {
+                // Where this cell sits along the light's path, in cell widths,
+                // counted so that the first cell reached gets the largest
+                // offset and therefore enters the sweep window first.
+                //
+                // The row term is what keeps the highlight straight: the streak
+                // leans, so its lower end trails behind its upper end, and a
+                // cell one row down has to be lit that much later. Without it
+                // whole columns light at once and the line comes out as a
+                // staircase — invisible while the streak is near vertical, and
+                // increasingly wrong as it tilts.
+                double rowLean = -GemShine::streakLean();
+                double phaseCells = (7 - i) + rowLean * (7 - j);
+
+                Uint32 cellPhase = Uint32(phaseCells * kGlintCellTravelMs);
+                Uint32 cellTime = (nowTicks + cellPhase) % kGlintCycleMs;
+
+                if (cellTime < kGlintSweepMs)
+                {
+                    glintFrame = int(cellTime * GemShine::kFrameCount / kGlintSweepMs);
+                }
+            }
+
+            // Always set it, so a gem left mid-sweep when the board starts
+            // moving goes back to its plain frame instead of freezing lit up
+            mGemShine.setFrame(*img, gemColour, glintFrame);
 
             img->draw(imgX, imgY, Z::Gem, 1, 1, 0, imgAlpha);
         }
@@ -681,7 +765,7 @@ void GameBoard::createFloatingScores()
         int score = m.size() * pointsPerGem * mMultiplier;
 
         // Create a new floating score image
-        mFloatingScores.emplace_back(FloatingScore(mGame,
+        mFloatingScores.emplace_back(FloatingScore(&mNumbers,
            score,
            m.midSquare().x,
            m.midSquare().y, Z::FloatingScore));

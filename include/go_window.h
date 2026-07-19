@@ -11,6 +11,8 @@
 #include "OptionsManager.h"
 
 
+class GemShine;
+
 namespace GoSDL {
 
     class Window {
@@ -116,6 +118,10 @@ namespace GoSDL {
         friend class Image;
         friend class Font;
 
+        // Composites gem sprites offscreen at load time, so it needs the
+        // renderer to create and draw into a render target.
+        friend class ::GemShine;
+
         inline SDL_Renderer * getRenderer() { return mRenderer; }
         void enqueueDraw(SDL_Texture * texture, SDL_Rect destRect, double angle, float z, Uint8 alpha, SDL_Color color, const SDL_Rect * srcRect = nullptr);
 
@@ -134,6 +140,14 @@ namespace GoSDL {
         // Poll events and, if active, run gameLoop(). One iteration of show()'s loop.
         void runFrame();
 
+        // Drain the SDL event queue, dispatching to the virtual handlers above
+        void pollEvents();
+
+        // Whether enough time has passed to render another frame. Used on web,
+        // where the browser drives the loop at the display's refresh rate and
+        // frames beyond the target have to be dropped by hand.
+        bool frameIsDue();
+
 #ifdef __EMSCRIPTEN__
         // Trampoline for emscripten_set_main_loop_arg, which takes a plain function pointer.
         static void emscriptenMainLoopCallback(void * arg);
@@ -147,6 +161,14 @@ namespace GoSDL {
 
         /// Time interval between frames, in milliseconds
         Uint32 mUpdateInterval;
+
+        /// Target frame duration, 60fps. Kept as a double so the leftover time
+        /// carried between frames doesn't round away.
+        static constexpr double mTargetFrameMs = 1000.0 / 60.0;
+
+        /// Elapsed time not yet spent on a frame, and when the last one ran
+        double mFrameAccumulator = 0;
+        Uint32 mLastFrameTicks = 0;
 
         // Whether the mouse is in use
         bool mMouseActive = false;

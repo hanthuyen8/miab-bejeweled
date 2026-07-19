@@ -31,25 +31,28 @@ using namespace std;
 
 #include "log.h"
 #include "go_image.h"
-#include "go_font.h"
+#include "BitmapNumber.h"
 #include "Assets.h"
 
 namespace GoSDL {
   class Window;
 }
 
+/**
+ * The score that floats up off a match.
+ *
+ * Drawn with glyphs from the shared atlas rather than rasterized with SDL_ttf.
+ * Rendering the text gave every score its own SDL_Texture — and a second one
+ * for its shadow — so each one on screen forced its own draw call, right
+ * during the particle burst. Atlas glyphs batch with everything else instead,
+ * and nothing is rasterized or allocated while the board is animating.
+ */
 class FloatingScore{
 public:
-    FloatingScore(GoSDL::Window * parentWindow, int score, float x, float y, float z) :
+    /// `numbers` must outlive this object; GameBoard owns it.
+    FloatingScore(BitmapNumber * numbers, int score, float x, float y, float z) :
+        mNumbers(numbers), mScoreText(std::to_string(score)),
         x_(x), y_(y), z_(z), mCurrentStep(0), mTotalSteps(50) {
-
-        // Load the font
-        GoSDL::Font tempFont;
-        tempFont.setAll(parentWindow, Assets::FontLcd, 60);
-
-        // Build the image
-        mScoreImage = tempFont.renderText(std::to_string(score), {255, 255, 255, 255});
-        mScoreImageShadow = tempFont.renderText(std::to_string(score), {0, 0, 0, 255});
     }
 
     bool ended(){
@@ -63,19 +66,23 @@ public:
 
         float p = 1.f - (float)mCurrentStep/mTotalSteps;
 
-        float posX = 241 + x_ * 65;
-        float posY = 41 + y_ * 65 - (1 - p) * 20;
+        int posX = (int)(241 + x_ * 65);
+        int posY = (int)(41 + y_ * 65 - (1 - p) * 20);
 
-        mScoreImage.draw(posX, posY, z_, 1, 1, 0, (int)(p * 255));
+        Uint8 alpha = (Uint8)(p * 255);
 
-        mScoreImageShadow.draw(posX + 2, posY + 2, z_ - 0.1, 1, 1, 0, (int)(p * 255));
+        // Same glyphs, tinted black and offset both ways, for the outline
+        mNumbers->draw(mScoreText, posX + 2, posY + 2, z_ - 0.1, kFontSize, {0, 0, 0, 255}, alpha);
+        mNumbers->draw(mScoreText, posX - 2, posY - 2, z_ - 0.1, kFontSize, {0, 0, 0, 255}, alpha);
 
-        mScoreImageShadow.draw(posX - 2, posY - 2, z_ - 0.1, 1, 1, 0, (int)(p * 255));
-
+        mNumbers->draw(mScoreText, posX, posY, z_, kFontSize, {255, 255, 255, 255}, alpha);
     }
 private:
-    GoSDL::Image mScoreImage;
-    GoSDL::Image mScoreImageShadow;
+    /// Matches the size the score used to be rasterized at
+    static constexpr int kFontSize = 60;
+
+    BitmapNumber * mNumbers;
+    std::string mScoreText;
 
     float x_;
     float y_;

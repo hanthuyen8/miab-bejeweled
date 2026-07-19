@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render LCD digit glyphs (0-9 and ':') from fuentelcd.ttf into individual
+"""Render digit glyphs (0-9 and ':') from Quicksand-Bold.ttf into individual
 white PNGs for the texture atlas (Step 4 — bitmap font).
 
 Design:

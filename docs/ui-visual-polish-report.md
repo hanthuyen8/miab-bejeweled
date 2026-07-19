@@ -36,8 +36,25 @@ polish mà không phải dò lại quyết định cũ. Xem cấu trúc asset & 
 - **7 gem** (`gemBlue/Green/Orange/Purple/Red/White/Yellow.png`): nguồn mới
   512×512 vuông, resize xuống đúng 65×65 (kích thước ô bàn cờ — code vẽ gem
   ở `factorX/Y=1`, không tự scale, xem `GameBoard.cpp` dùng hằng `65` khắp
-  nơi). `gemYellow` ban đầu thiếu trong export, đã bổ sung.
+  nơi). `gemYellow` ban đầu thiếu trong export, đã bổ sung. Sau đó user
+  re-export lại vài lần (từng viên riêng lẻ, rồi cả bộ 7 viên) — cùng một
+  quy trình resize 65×65, không có gì đổi về mặt kỹ thuật.
 - **Selector** (xem mục 4).
+
+## 1b. Con trỏ chuột (`handCursor.png`)
+
+- Redesign lại (viên đá hình mũi tên), nguồn export 750×750 vuông → resize
+  xuống **32×32** (giữ nguyên size cũ, hotspot ở góc trên-trái khớp với cách
+  `Game.cpp` vẽ: `mMouseCursor.draw(getMouseX(), getMouseY(), Z::Cursor)`,
+  không có offset).
+- **Quyết định giữ standalone, không đưa vào atlas** dù kích thước nhỏ (đủ
+  chỗ trong atlas 248×543 hiện tại). Lý do: cursor vẽ **cuối cùng mỗi frame ở
+  z=999**, sau các draw text (không thuộc atlas) — gộp vào atlas sẽ không
+  tạo thêm batch nào (đúng giới hạn "text chen texture" đã ghi ở
+  [step2-texture-atlas-report.md](step2-texture-atlas-report.md)), chỉ bớt
+  được 1 texture object riêng. Không đáng đánh đổi việc sửa `atlas.tps` +
+  code (`Game.cpp` từ `setPath` sang `atlas.setImage`) cho lợi ích nhỏ vậy —
+  nên **để ở `media/images/handCursor.png` như cũ**.
 
 ## 3. Panel bên trái (buttons + score/time)
 
@@ -78,10 +95,9 @@ polish mà không phải dò lại quyết định cũ. Xem cấu trúc asset & 
 - Màu chữ (label + số) đồng nhất: `#e5d8c4`.
 - **Digit bitmap font đổi sang Bold**: `texture-packer/generate_glyphs.py`
   trỏ sang `assets/fonts/Quicksand-Bold.ttf` (thêm mới, chỉ dùng để bake
-  glyph, không ship runtime) thay vì `fuentelcd.ttf`. Chỉ ảnh hưởng
-  `GameIndicators` (score/time HUD) — **không** ảnh hưởng `ScoreTable`/
-  `FloatingScore`, vốn vẫn render trực tiếp bằng `fuentelcd.ttf` qua SDL_ttf,
-  không đi qua glyph bitmap này.
+  glyph, không ship runtime) thay vì `fuentelcd.ttf`. Lúc đó chỉ ảnh hưởng
+  `GameIndicators` (score/time HUD); về sau `FloatingScore` cũng chuyển sang
+  dùng bộ glyph này (mục 4d) và `fuentelcd.ttf` bị gỡ hẳn (mục 4e).
 
 ## 4. Selector (ô chọn gem)
 
@@ -111,6 +127,119 @@ polish mà không phải dò lại quyết định cũ. Xem cấu trúc asset & 
     không chỉ selector — cần cân nhắc kỹ trước khi làm, rủi ro cao hơn một
     tính năng nhỏ.
 
+## 4b. Hiệu ứng tia sáng lướt qua gem (`GemShine`)
+
+Vệt sáng chéo quét qua từng viên gem, `include/GemShine.h` + `src/GemShine.cpp`.
+
+- **Không dùng sprite** — vệt sáng sinh bằng code (gradient gaussian 2 dải:
+  một dải rộng mềm + một dải mảnh sáng đi kèm). Không có asset nào phải export.
+- **Mask theo silhouette gem**: đây là vấn đề cốt lõi. Vẽ đè một sprite chữ
+  nhật lên ô 65px sẽ lòi ra nền bàn cờ vì gem không lấp đầy ô. Giải pháp:
+  lúc load, bake sẵn từng gem × 24 frame vào một sheet qua render target, dùng
+  `SDL_ComposeCustomBlendMode(DST_ALPHA, ONE, ADD, ZERO, ONE, ADD)` →
+  `màu = vệt × alphaGem + màuGem`, `alpha` giữ nguyên. Vệt bị nhân với alpha
+  của gem nên tắt đúng ở mép gem.
+  - Vì hệ số màu nguồn là `DST_ALPHA` chứ không phải `SRC_ALPHA`, **cường độ
+    vệt phải nằm ở kênh RGB, alpha để 255**. Đây là chỗ dễ sai nhất.
+  - Gem được vẽ vào sheet bằng `SDL_BLENDMODE_NONE` để alpha gốc sang nguyên
+    vẹn — cả hiệu ứng phụ thuộc vào alpha đó.
+  - Có fallback sang `SDL_BLENDMODE_ADD` nếu backend từ chối custom blend
+    (khi đó vệt sẽ lem ra ngoài viền). GLES2 của Emscripten **chấp nhận**, đã
+    kiểm chứng.
+- **Chi phí draw = 0**: gem vẫn vẽ đúng 1 lần như cũ, chỉ đổi `srcRect` sang
+  frame khác. Gem tách khỏi `atlas.png` sang sheet riêng nên +1 texture, nhưng
+  đo thực tế `batches/frame` chỉ 9-10 (báo cáo cũ ghi 13) → không đáng kể.
+  Sheet 24×65 × 7×65 ≈ 2.8MB.
+- **Một tham số tốc độ duy nhất** (`kGlintCellTravelMs` trong `GameBoard.cpp`):
+  thời gian ánh sáng đi hết bề ngang 1 ô. `kGlintSweepMs` được **suy ra** từ
+  nó. Lý do phải suy ra chứ không chỉnh tay: tốc độ vệt *bên trong* một gem và
+  tốc độ sóng *từ gem này sang gem kia* là cùng một tốc độ vật lý. Lúc để hai
+  hằng số độc lập thì chúng lệch nhau 2.6× → mắt đọc ra "từng viên tự loé",
+  không phải "một tia sáng quét qua bàn cờ".
+- **Pha có thành phần hàng**: `phaseCells = (7-i) + |lean| * (7-j)`. Vệt nghiêng
+  thì đầu dưới trễ hơn đầu trên, nên hàng dưới phải sáng muộn hơn đúng bằng độ
+  lệch đó, nếu không đường sáng thành hình bậc thang. Ở góc gần 90° sai số này
+  ~0 nên không lộ; càng nghiêng càng lộ.
+- **`GemShine` expose `kStreakAngleDegrees` / `kStreakWidth` / `streakLean()`**
+  ra header thay vì giấu trong `.cpp`, để `GameBoard` tính pha từ **chính** con
+  số dùng lúc bake. Hai nơi giữ hai bản sao thì đổi góc một chỗ là lệch ngay và
+  không có gì báo lỗi.
+- Số cột sáng cùng lúc **không phải tham số chỉnh tay** — nó là hệ quả hình học
+  của góc nghiêng (60° trên bàn cao 520px → đường thẳng trải ngang ~4.6 cột).
+  Muốn ít cột sáng hơn thì dựng vệt đứng hơn.
+- Glint tắt khi bàn cờ đang động (`eSteady`/`eGemSelected` mới bật), và frame
+  luôn được set kể cả lúc tắt để gem không bị đóng băng ở giữa sweep.
+
+## 4c. Khoá 60fps trên web
+
+Phát hiện khi truy vấn nghi vấn "tụt fps lúc sóng sáng quét qua" — hoá ra
+không có tụt fps nào cả.
+
+- `emscripten_set_main_loop_arg(..., 0, 1)` bám `requestAnimationFrame` → chạy
+  đúng refresh rate màn hình (120Hz trên máy ProMotion). `mUpdateInterval`
+  (17ms) **chỉ có tác dụng ở bản native**, web bỏ qua hoàn toàn.
+- Hệ quả nghiêm trọng: `update()` chạy animation bằng `mAnimationCurrentStep++`
+  — bước cố định **mỗi lần gọi**, không theo thời gian thực. Nên toàn bộ
+  animation bàn cờ chạy nhanh theo refresh rate. Selector không dính vì đã
+  chuyển sang delta-time (mục 4), phần bàn cờ thì chưa.
+- Cách khoá: **không** truyền `60` vào `emscripten_set_main_loop_arg` — khi
+  fps > 0 Emscripten chuyển sang `setTimeout`, mất đồng bộ vsync, pacing tệ
+  hơn. Thay vào đó giữ rAF và bỏ nhịp thừa bằng accumulator
+  (`Window::frameIsDue()`), có clamp 100ms cho trường hợp tab xuống nền.
+- `runFrame()` được tách thành `pollEvents()` + `gameLoop()`; callback web
+  drain event **mỗi nhịp rAF** (input vẫn nhạy ở 120Hz) nhưng chỉ vẽ ở 60fps.
+- Đường native giữ nguyên `SDL_Delay`, **cố ý không** gate trong `runFrame()`
+  — gate ở đó sẽ chồng lên bộ giới hạn sẵn có của native và tụt xuống 30fps.
+- Cảm giác "glint giật" ban đầu chính là do glint đổi frame ở 60Hz trên màn
+  120Hz. Khoá 60fps làm khớp 1:1 và hết giật.
+
+## 4d. `FloatingScore` chuyển sang glyph atlas
+
+Phát hiện khi soi draw call bằng Spector: mỗi số điểm bay lên tốn **2 draw
+call riêng** (một cho chữ trắng, một cho bóng), nên nổ 2 chuỗi là +4 draw call.
+
+- Nguyên nhân: `FloatingScore` gọi `Font::renderText()` trong constructor →
+  mỗi instance tạo `SDL_Texture` **riêng**. Batch chỉ nối các draw liên tiếp
+  cùng con trỏ texture (xem [step2](step2-texture-atlas-report.md)), nên texture
+  riêng = bind riêng = draw call riêng.
+- Sửa: dùng `BitmapNumber` (glyph 0-9 từ atlas) y như HUD đã làm ở Step 4.
+  Bóng đổ giờ là **cùng bộ glyph** với `colorMod` đen thay vì texture thứ hai.
+  Tất cả gộp vào run atlas sẵn có → gần như không thêm draw call nào.
+- Lợi ích phụ quan trọng hơn cả draw call: constructor cũ còn gọi
+  `Font::setAll()` → `go_font.cpp` gọi `TTF_OpenFont` **mỗi lần**, không có
+  cache. Tức mỗi lần ăn điểm là mở + parse file font, rasterize 2 lần, upload
+  2 texture — ngay giữa nhịp particle đang nổ. Nay constructor chỉ còn
+  `std::to_string`.
+- `BitmapNumber` được **inject qua constructor** (`FloatingScore` nhận
+  `BitmapNumber *`), `GameBoard` sở hữu instance riêng thay vì dùng chung với
+  `GameIndicators` — tránh `GameBoard` phải tham chiếu ngược sang nó. Hai
+  instance chỉ là vài `Image` copy trỏ chung một atlas texture.
+- Đổi diện mạo: số điểm bay lên từ LCD → Quicksand-Bold, trùng font với HUD.
+
+## 4e. Gỡ bỏ font LCD
+
+- `media/fonts/fuentelcd.ttf` đã xoá khỏi repo, cùng hằng `Assets::FontLcd`.
+- Chỗ dùng cuối cùng là `ScoreTable` (số điểm màn "GAME OVER") → chuyển sang
+  `Assets::FontButton` (Quicksand-SemiBold) @72. Tiện thể xoá `fntLcdSmall`
+  vốn được khai báo nhưng chưa bao giờ dùng.
+- Lưu ý còn lệch: số điểm ScoreTable là **SemiBold**, còn chữ số HUD/floating
+  score là **Bold** — vì `Quicksand-Bold.ttf` chỉ nằm ở `assets/fonts/` để bake
+  glyph, không ship trong `media/`. Muốn khớp tuyệt đối thì cho `ScoreTable`
+  vẽ số bằng `BitmapNumber` (nó đang pre-render thành `Image` kèm shadow nên
+  phải sửa cách dựng), hoặc ship thêm Quicksand-Bold.
+
+## 4f. Hotkey capture Spector.js
+
+- `platform/web/shell.html` — copy shell mặc định của Emscripten, thêm listener
+  bind **F9** gọi `window.spector.captureNextFrame(canvas)`. Lý do: bấm nút
+  trên UI của extension quá chậm để bắt hiệu ứng ngắn (particle chỉ sống ~0.8s).
+- Listener bind trên `window` ở **capture phase** để chạy trước khi SDL nuốt
+  event bàn phím trên canvas.
+- Extension chỉ inject `window.spector` **sau khi được kích hoạt trên tab đó** —
+  bấm icon rồi reload, không thì hotkey chỉ log cảnh báo.
+- `CMakeLists.txt` khai báo `LINK_DEPENDS` cho shell, vì `--shell-file` không
+  được CMake coi là dependency → sửa shell mà không có nó thì không relink.
+
 ## 5. Gỡ bỏ hỗ trợ PlayStation Vita
 
 Không còn build target Vita. Đã xóa toàn bộ:
@@ -139,6 +268,13 @@ thời điểm viết, không phải code sống cần đồng bộ.
 
 ## Việc còn dang dở / có thể polish tiếp
 
+- **Animation bàn cờ vẫn dùng bước cố định mỗi lần `update()`** (`mAnimationCurrentStep++`).
+  Sau khi khoá 60fps (mục 4c) thì nó chạy đúng tốc độ, nhưng vẫn mong manh: ai
+  đổi frame cap là tốc độ game đổi theo. Fix gốc là chuyển sang delta-time như
+  selector đã làm. Đây là món đáng làm nhất trong danh sách này.
+- **`go_font.cpp` không cache `TTF_OpenFont`** — mỗi `Font::setAll()` mở lại
+  file font. Đã hết nóng sau khi `FloatingScore` bỏ TTF (mục 4d), nhưng
+  `ScoreTable`/`StateMainMenu`/`BaseButton` vẫn gọi lúc load.
 - `timeBackground` đang dùng chung ảnh với `scoreBackground` — nếu muốn ảnh
   riêng biệt cho time, cần export thêm.
 - Cân nhắc `SDL_FRect`/`RenderCopyExF` nếu muốn thêm hiệu ứng scale mượt cho

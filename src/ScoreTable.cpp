@@ -38,15 +38,14 @@ ScoreTable::ScoreTable(Game * p, int score, string gameMode) : mGame(p)
     scoreBoardWidth = 300;
 
     // Load necessary fonts
-    GoSDL::Font fntH1, fntH2, fntLcdBig, fntLcdSmall;;
+    GoSDL::Font fntH1, fntH2, fntScore;
     fntH1.setAll(mGame, Assets::FontMenu, 60);
     fntH2.setAll(mGame, Assets::FontNormal, 35);
-    fntLcdBig.setAll(mGame, Assets::FontLcd, 72);
-    fntLcdSmall.setAll(mGame, Assets::FontLcd, 36);
+    fntScore.setAll(mGame, Assets::FontButton, 72);
 
     // Cache-render texts
     mRenderedHeader = fntH1.renderTextWithShadow(_("GAME OVER"), {255, 255, 255, 255}, 1, 3, {0, 0, 0, 128});
-    mRenderedScore = fntLcdBig.renderTextWithShadow(std::to_string(score), {255, 255, 255, 255}, 1, 3, {0, 0, 0, 128});
+    mRenderedScore = fntScore.renderTextWithShadow(std::to_string(score), {255, 255, 255, 255}, 1, 3, {0, 0, 0, 128});
     mRenderedLastScore = fntH2.renderTextWithShadow(_("Latest high score: ") + std::to_string(lastScore), {255, 255, 255, 255}, 1, 3, {0, 0, 0, 128});
 }
 

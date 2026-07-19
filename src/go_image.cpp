@@ -147,6 +147,17 @@ void GoSDL::Image::setTexture (SDL_Texture * texture)
     SDL_QueryTexture(mTexture.get(), NULL, NULL, &mWidth, &mHeight);
 }
 
+bool GoSDL::Image::getSrcRect(SDL_Rect & out) const
+{
+    if (!mHasSrcRect)
+    {
+        return false;
+    }
+
+    out = mSrcRect;
+    return true;
+}
+
 int GoSDL::Image::getWidth()
 {
     return mWidth;

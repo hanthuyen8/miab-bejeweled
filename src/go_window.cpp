@@ -94,7 +94,18 @@ GoSDL::Window::~Window()
 void GoSDL::Window::emscriptenMainLoopCallback(void * arg)
 {
     Window * self = static_cast<Window *>(arg);
-    self->runFrame();
+
+    // The browser fires this once per display refresh, which is 120Hz or more
+    // on a high-refresh screen. Events are drained every time so input stays
+    // responsive, but the frame itself is capped: it saves battery, and it
+    // keeps update() at the rate the board animations assume, since they
+    // advance a fixed step per call rather than by elapsed time.
+    self->pollEvents();
+
+    if (self->mShouldRun && self->mApplicationActive && self->frameIsDue())
+    {
+        self->gameLoop();
+    }
 
     if (!self->mShouldRun)
     {
@@ -142,6 +153,48 @@ void GoSDL::Window::show()
 }
 
 void GoSDL::Window::runFrame()
+{
+    pollEvents();
+
+    if (mShouldRun && mApplicationActive)
+    {
+        gameLoop();
+    }
+}
+
+bool GoSDL::Window::frameIsDue()
+{
+    Uint32 now = SDL_GetTicks();
+
+    if (mLastFrameTicks == 0)
+    {
+        mLastFrameTicks = now;
+        return true;
+    }
+
+    mFrameAccumulator += now - mLastFrameTicks;
+    mLastFrameTicks = now;
+
+    // A backgrounded tab stops firing the callback; without this the
+    // accumulator comes back holding seconds and would let through a burst of
+    // frames trying to catch up.
+    if (mFrameAccumulator > 100.0)
+    {
+        mFrameAccumulator = mTargetFrameMs;
+    }
+
+    if (mFrameAccumulator < mTargetFrameMs)
+    {
+        return false;
+    }
+
+    // Subtract rather than reset, so the leftover carries into the next frame
+    // and the long-run average stays exactly on target instead of drifting.
+    mFrameAccumulator -= mTargetFrameMs;
+    return true;
+}
+
+void GoSDL::Window::pollEvents()
 {
     // To poll events
     SDL_Event e;
@@ -200,11 +253,6 @@ void GoSDL::Window::runFrame()
             closeDisconnectedGameControllers();
             break;
         }
-    }
-
-    if (mApplicationActive)
-    {
-        gameLoop();
     }
 }
 

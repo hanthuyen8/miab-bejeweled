@@ -59,7 +59,16 @@ if(EMSCRIPTEN)
         # MiabSDK::RequestHighscore calls back from JS into a C++ export (miab_sdk_on_highscore_data)
         # via Module.ccall, which isn't attached to Module by default.
         -sEXPORTED_RUNTIME_METHODS=["ccall"]
+        # Emscripten's stock shell plus an F9 hotkey that triggers a Spector.js
+        # capture; see the comment in the file.
+        --shell-file ${PROJECT_SOURCE_DIR}/platform/web/shell.html
     )
+
+    # The shell is a link input, but CMake doesn't infer that from the flag
+    # above, so editing it alone would not relink (same trap as media/, see
+    # docs/ui-visual-polish-report.md).
+    set_property(TARGET seajeweled APPEND PROPERTY
+        LINK_DEPENDS ${PROJECT_SOURCE_DIR}/platform/web/shell.html)
 else()
     # Find libraries
     include(FindPkgConfig)

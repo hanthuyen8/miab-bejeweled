@@ -42,6 +42,14 @@ namespace GoSDL {
         int getWidth();
         int getHeight();
 
+        /// Underlying texture, for code that renders this image outside the
+        /// drawing queue (offscreen compositing — see GemShine).
+        SDL_Texture * getTexture() const { return mTexture.get(); }
+
+        /// Fills `out` with the atlas sub-region this image draws. Returns
+        /// false when the image draws its whole texture, leaving `out` alone.
+        bool getSrcRect (SDL_Rect & out) const;
+
     private:
         bool loadTexture();
 
