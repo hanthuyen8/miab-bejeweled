@@ -306,6 +306,37 @@ Bản thay thế (buzz 8-bit 0.59s, năng lượng trải đều) có mean `-10.
   phản hồi) và không file nào có. Phần còn lại là đuôi vang hoặc khoảng lặng
   giữa file — cắt là hỏng tiếng, mà giữ cũng chẳng tốn gì đáng kể.
 
+## 7. Submit điểm khi người chơi chủ động thoát
+
+Trước đó `endGame()` là nơi **duy nhất** gọi `MiabSDK::SubmitHighscore()`, nên
+thoát giữa chừng là mất sạch điểm. Nay mọi đường thoát đều báo điểm.
+
+- **Ba đường thoát, gom về một chỗ** — `StateGame::exitToMenu()`. Trước đó
+  `ESC` (`StateGame.cpp`), nút `START` tay cầm, và nút Exit
+  (`GameIndicators::click()`) mỗi đường tự gọi `changeState("stateMainMenu")`
+  riêng. Chỉ sửa nút Exit thì hai đường kia vẫn âm thầm làm mất điểm.
+- **Chống submit trùng bằng cờ tường minh `mScoreReported`**, không suy ra từ
+  `mState`. Cả `endGame()` lẫn `submitScoreOnQuit()` đều đi qua
+  `reportHighscore()`, nơi kiểm tra cờ. Lý do không dùng state: hai đường report
+  sẽ phải tự suy luận về các state của đường kia mới biết đã gửi hay chưa —
+  thêm state mới là hỏng thầm lặng. Kịch bản cần chặn: hết giờ → submit → bấm
+  Exit → submit lần hai.
+  - Cờ reset trong `resetGame()`. Không cần lo state cũ còn sót:
+    `Game::changeState()` `make_shared` state mới mỗi lần, nên `GameBoard`
+    luôn mới tinh khi vào lại game.
+- Bỏ qua khi `score <= 0`, tránh việc mở game rồi thoát ngay cũng tạo entry.
+
+### `elapsedMs` — thời gian chơi thật
+
+Thêm `mPlayStartTicks` set trong `StateGame::resetTime()` (cả hai mode đều gọi
+hàm này khi bắt đầu ván), truy xuất qua `getElapsedMs()`.
+
+Trước đó timetrial tính elapsed bằng `SDL_GetTicks() - (mTimeStart - 2*60*1000)`
+— **lặp lại hằng số 2 phút** vốn đã nằm ở `resetTime()`. Đổi thời lượng một chỗ
+là elapsed sai âm thầm. Quan trọng hơn: nếu sau này thêm tính năng **cộng bonus
+thời gian** (đẩy `mTimeStart` về phía trước) thì cách tính cũ sẽ khiến mỗi giây
+bonus **trừ đi một giây** trong thời gian báo cáo. Nay hai thứ đã tách rời.
+
 ## Gotcha quan trọng cần nhớ
 
 - **Chỉ sửa file trong `media/` (không đụng code) → `build.sh` không tự

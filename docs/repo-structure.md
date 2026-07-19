@@ -48,7 +48,9 @@ assets/                     ← source art (NOT shipped, TexturePacker inputs)
         Quicksand-SemiBold.ttf  (face "menu")
         Miso-Regular.ttf        (face "normal")
         Quicksand-Bold.ttf      (face "lcd")
-    photoshop/              ← file export gốc trước khi resize
+    photoshop/              ← file export gốc trước khi resize (kể cả
+                              mainMenuLogo/mainMenuBackground — bản ship trong
+                              media/ đã bị thu nhỏ/bỏ alpha, đây mới là master)
 
 platform/
     web/shell.html          ← shell HTML của Emscripten (--shell-file), thêm
@@ -61,7 +63,13 @@ texture-packer/
                               output = ../media/atlas.png + ../media/atlas.json
     generate_glyphs.py      ← bake glyph từ assets/fonts/*.ttf ra PNG + fonts.json
     build_atlas.sh          ← chạy generate_glyphs.py rồi repack atlas bằng
-                              TexturePacker CLI (không cần mở GUI)
+                              TexturePacker CLI (không cần mở GUI), rồi nén
+                              atlas.png lossless bằng oxipng
+
+optimize_media.sh           ← nén lossless mọi PNG trong media/ (bỏ kênh alpha
+                              chết + oxipng). CHẠY SAU MỖI LẦN EXPORT ẢNH TỪ
+                              PHOTOSHOP — export ghi đè mất phần tối ưu mà
+                              không có gì báo. Xem build-size-optimization.md
 ```
 
 ## Quy ước code
