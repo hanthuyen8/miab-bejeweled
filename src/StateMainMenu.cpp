@@ -130,10 +130,11 @@ void StateMainMenu::draw(){
     int logoAlfa = clamp( (int)(255 * (float)mAnimationCurrentStep / mAnimationLogoSteps),
                           0, 255);
 
-    // Draw the logo, scaled down to fit the canvas (source art is 1067px wide),
-    // with a small top margin so it doesn't touch the edge of the screen
-    double logoScale = 628.0 / 1067.0;
-    mImgLogo.draw(86, 86, Z::Menu::Logo, logoScale, logoScale, 0, logoAlfa);
+    // Drawn 1:1 — the shipped art is already 628px wide, the size it appears at
+    // (x=86 centres it on the 800px canvas). The full-resolution export lives in
+    // assets/photoshop/mainMenuLogo.png; scaling it down at runtime meant
+    // shipping ~7x the pixels and resampling them every frame.
+    mImgLogo.draw(86, 86, Z::Menu::Logo, 1, 1, 0, logoAlfa);
 
     const SDL_Color menuTextColor = {229, 226, 233, 255}, menuShadowColor = {0, 0, 0, 128};
 
