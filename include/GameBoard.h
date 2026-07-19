@@ -22,6 +22,19 @@ public:
     void resetGame();
     void endGame(int score, int elapsedMs = -1);
 
+    /**
+     * Reports the score for a run the player is walking away from before it
+     * ended on its own, so quitting doesn't throw the score away. No-op once
+     * this run has already been reported.
+     */
+    void submitScoreOnQuit(int score, int elapsedMs);
+
+private:
+    /// Sends the run to the leaderboard, at most once per run
+    void reportHighscore(int score, int elapsedMs);
+
+public:
+
 #ifdef SEAJEWELED_CHEATS
     /// Shows the score table straight away, skipping the highscore report that
     /// endGame() does. Debug only — see StateGame::cheatShowScoreTable.
@@ -163,6 +176,12 @@ private:
 
     // Track if a hint is used, to prevent score increases when so
     bool mHintUsed = false;
+
+    // Whether this run's score has already gone to the leaderboard. Tracked
+    // explicitly rather than inferred from mState, because the two paths that
+    // report a score (running out of time, and quitting) would otherwise each
+    // have to reason about the other's states to avoid a double submission.
+    bool mScoreReported = false;
 };
 
 #endif

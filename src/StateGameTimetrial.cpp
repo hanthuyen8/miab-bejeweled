@@ -35,8 +35,7 @@ void StateGameTimetrial::update()
     if (remainingTime <= 0)
     {
         // Tell the board that the game ended with the given score
-        int elapsedMs = (int)(SDL_GetTicks() - (mTimeStart - 2 * 60 * 1000));
-        mGameBoard.endGame(mGameIndicators.getScore(), elapsedMs);
+        mGameBoard.endGame(mGameIndicators.getScore(), getElapsedMs());
     }
 
     mGameBoard.update();

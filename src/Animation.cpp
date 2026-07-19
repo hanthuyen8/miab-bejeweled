@@ -19,7 +19,6 @@ numAttr(n), duracion(d), esperaInicial(e), time(0){
     // Define el tipo de animación
    setTipoAnimacion(anim);
 
-   lDEBUG << Log::CON("Animación") << " . " << n << " parámetros.";
 }
 
 
@@ -29,7 +28,6 @@ Animacion::~Animacion(){
     delete change;
     delete actual;
 
-    lDEBUG << Log::DES("Animación");
 }
 
 void Animacion::setTipoAnimacion(tipoAnim a){

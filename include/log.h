@@ -85,26 +85,6 @@ public:
      */
     static string ToString(TLogLevel T);
 
-    /**
-     * @brief Devuelve una cadena con el texto de log estándar para constructores.
-     * Escrito por conveniencia para unificar el logging de constructores y destructores.
-     *
-     * @param s Nombre de la clase cuyo constructor está siendo llamado
-     * @return Cadena con el texto para hacer log de la construcción
-     *
-     */
-    static string CON(string s);
-
-    /** 
-     * @brief Devuelve una cadena con el texto de log estándar para destructores.
-     * Escrito por conveniencia para unificar el logging de constructores y destructores.
-     *
-     * @param s Nombre de la clase cuyo destructor está siendo llamado.
-     * @return Cadena con el texto para hacer log de la destrucción.
-     *
-     */
-    static string DES(string s);
-
     static bool salida;
 
     /**

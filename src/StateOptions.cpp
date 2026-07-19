@@ -21,7 +21,6 @@ T clamp(T v, R bottom, R top)
 
 StateOptions::StateOptions(Game * p) : State(p)
 {
-    lDEBUG << Log::CON("StateOptions");
 
     mOptions.loadResources();
 
@@ -217,5 +216,4 @@ void StateOptions::optionChosen()
 
 StateOptions::~StateOptions()
 {
-    lDEBUG << Log::DES("StateOptions");
 }

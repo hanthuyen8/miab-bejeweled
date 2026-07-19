@@ -51,6 +51,9 @@ void GameBoard::resetGame()
     mMultiplier = 0;
     mAnimationCurrentStep = 0;
 
+    // A fresh run gets its own leaderboard entry
+    mScoreReported = false;
+
     // If there's a board on screen, make it disappear first
     if (mState != eShowingScoreTable)
     {
@@ -83,16 +86,39 @@ void GameBoard::endGame(int score, int elapsedMs)
     // Generate the score table
     scoreTable = std::make_shared<ScoreTable>(mGame, score, mGame->getCurrentState());
 
+    reportHighscore(score, elapsedMs);
+}
+
+void GameBoard::reportHighscore(int score, int elapsedMs)
+{
+    // One run, one entry — whichever path gets here first wins
+    if (mScoreReported)
+        return;
+
+    mScoreReported = true;
+
     // Report the highscore to the MIAB host page, if embedded
     std::string currentState = mGame->getCurrentState();
     if (currentState == "stateGameEndless")
     {
-        MiabSDK::SubmitHighscore(score, "endless");
+        MiabSDK::SubmitHighscore(score, "endless", elapsedMs);
     }
     else if (currentState == "stateGameTimetrial")
     {
         MiabSDK::SubmitHighscore(score, "timetrial", elapsedMs);
     }
+}
+
+void GameBoard::submitScoreOnQuit(int score, int elapsedMs)
+{
+    // Nothing worth reporting from a session the player opened and left
+    if (score <= 0)
+        return;
+
+    // Quitting after the game already ended is the case mScoreReported exists
+    // for: reportHighscore() drops this on the floor rather than sending a
+    // second entry for the same run.
+    reportHighscore(score, elapsedMs);
 }
 
 #ifdef SEAJEWELED_CHEATS

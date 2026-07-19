@@ -40,14 +40,6 @@ string Log::bLila = "\033[1m\033[01;45m";
 string Log::cDef = "\033[00m";
 
 
-string Log::CON(string s){
-    return cVerde + "[++ Constructor] " + s + cDef;
-}
-
-string Log::DES(string s){
-    return cRojo + "[-- Destructor] " + s + cDef;
-}
-
 std::ostringstream& Log::Get(TLogLevel level)
 {
 

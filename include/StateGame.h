@@ -100,6 +100,13 @@ protected:
     /// Resets the game
     void resetGame();
 
+    /**
+     * Leaves for the main menu, reporting the score first. Every way out of a
+     * game — Esc, the controller's Start button and the Exit button — goes
+     * through here, so that none of them can quietly drop the player's score.
+     */
+    void exitToMenu();
+
     /// Resets the time
     void resetTime();
 
@@ -124,6 +131,15 @@ protected:
 
     /// Starting time
     double mTimeStart;
+
+    /// Tick count when the current run began, the origin for getElapsedMs()
+    Uint32 mPlayStartTicks = 0;
+
+    /**
+     * How long the player has actually been playing this run, in milliseconds.
+     * Reported alongside the score in both modes.
+     */
+    int getElapsedMs() const;
 
 private:
 

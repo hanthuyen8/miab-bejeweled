@@ -12,7 +12,6 @@
 
 StateGame::StateGame(Game * p) : State(p)
 {
-    lDEBUG << Log::CON("StateGame");
 
     setState(eInitial);
 
@@ -28,7 +27,6 @@ StateGame::StateGame(Game * p) : State(p)
 
 StateGame::~StateGame ()
 {
-    lDEBUG << Log::DES("StateGame");
 }
 
 void StateGame::draw()
@@ -56,7 +54,7 @@ void StateGame::buttonDown(SDL_Keycode button)
 {
     if (button == SDLK_ESCAPE)
     {
-        mGame -> changeState("stateMainMenu");
+        exitToMenu();
     }
 
     else if (button == SDLK_h)
@@ -72,7 +70,7 @@ void StateGame::buttonDown(SDL_Keycode button)
 void StateGame::controllerButtonDown(Uint8 button)
 {
     if (button == SDL_CONTROLLER_BUTTON_START) {
-        mGame -> changeState("stateMainMenu");
+        exitToMenu();
     } else if (button == SDL_CONTROLLER_BUTTON_BACK) {
         resetGame();
     } else {
@@ -162,10 +160,27 @@ void StateGame::resetGame()
     mGameBoard.resetGame();
 }
 
+void StateGame::exitToMenu()
+{
+    mGameBoard.submitScoreOnQuit(getScore(), getElapsedMs());
+    mGame -> changeState("stateMainMenu");
+}
+
 void StateGame::resetTime()
 {
     // Default time is 2 minutes
     mTimeStart = SDL_GetTicks() + 2 * 60 * 1000;
+
+    // Both modes call this when a run starts, so it is also the one place that
+    // knows when "now" began — timetrial used to re-derive it by subtracting
+    // the 2 minutes above back off mTimeStart, which silently produced a wrong
+    // elapsed time the moment that duration was changed in only one of the two.
+    mPlayStartTicks = SDL_GetTicks();
+}
+
+int StateGame::getElapsedMs() const
+{
+    return (int)(SDL_GetTicks() - mPlayStartTicks);
 }
 
 void StateGame::showHint()

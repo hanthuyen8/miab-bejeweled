@@ -182,9 +182,9 @@ void GameIndicators::click(int mouseX, int mouseY)
     // Exit button was clicked
     if (mExitButton.clicked(mouseX, mouseY))
     {
-        // Played before the state change, which tears this state down
+        // Played before leaving, which tears this state down
         mGame->getGameSounds()->playSoundButtonClick();
-        mGame -> changeState("stateMainMenu");
+        mStateGame -> exitToMenu();
     }
 
     // Hint button was clicked

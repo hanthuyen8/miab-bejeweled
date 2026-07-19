@@ -16,7 +16,6 @@
 Game::Game ()
     : GoSDL::Window(800, 600, "Seajeweled")
 {
-    lDEBUG << Log::CON("Game");
 
     mMouseCursor.setWindow(this);
     mMouseCursor.setPath(Assets::HandCursor);
@@ -49,7 +48,6 @@ Game::Game ()
 
 Game::~Game()
 {
-    lDEBUG << Log::DES("Game");
 }
 
 void Game::update ()

@@ -35,7 +35,6 @@ static size_t firstUtf8CharLen(const std::string & text)
 
 StateMainMenu::StateMainMenu(Game * p) : State(p)
 {
-    lDEBUG << Log::CON("StateMainMenu");
 
     mCurrentTransitionState = TransitionIn;
 
@@ -259,5 +258,4 @@ void StateMainMenu::optionChosen()
 
 StateMainMenu::~StateMainMenu()
 {
-    lDEBUG << Log::DES("StateMainMenu");
 }

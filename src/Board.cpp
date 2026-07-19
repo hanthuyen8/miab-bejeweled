@@ -6,7 +6,6 @@
 
 Board::Board()
 {
-    lDEBUG << Log::CON("Board");
 
     generate();
 }

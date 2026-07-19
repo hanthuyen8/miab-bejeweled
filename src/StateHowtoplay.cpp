@@ -7,7 +7,6 @@
 
 StateHowtoplay::StateHowtoplay(Game * p) : State(p)
 {
-    lDEBUG << Log::CON("StateHowtoPlay");
 
     mImgBackground.setWindowAndPath(p, Assets::HowtoScreen);
 
@@ -73,5 +72,4 @@ void StateHowtoplay::mouseButtonDown(Uint8)
 
 StateHowtoplay::~StateHowtoplay()
 {
-    lDEBUG << Log::DES("StateHowtoPlay");
 }
