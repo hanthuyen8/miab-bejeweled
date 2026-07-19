@@ -113,6 +113,7 @@ texture cache trong `GoSDL::Image`, mọi Image nạp cùng file atlas chia sẻ
 
 - Thư mục `docs/` chứa kế hoạch/báo cáo tối ưu (user tracking công việc ở
   đây). Xem `performance-optimization-plan.md` và các `stepN-*-report.md`.
+- Phím tắt debug, cách đo draw call, bẫy build: [dev-tooling.md](dev-tooling.md).
 - Z-order layering đã gom vào `include/ZOrder.h` (xem mục "Draw depth" ở trên).
 - **Font LCD đã bị gỡ bỏ.** `fuentelcd.ttf` không còn trong repo; chữ số giờ
   vẽ bằng glyph bitmap trong atlas (bake từ Quicksand-Bold), số điểm màn kết

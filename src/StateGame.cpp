@@ -182,3 +182,15 @@ void StateGame::increaseScore (int amount)
 int StateGame::getScore() {
     return mGameIndicators.getScore();
 }
+
+#ifdef SEAJEWELED_CHEATS
+
+void StateGame::cheatAddScore(int amount) {
+    mGameIndicators.increaseScore(amount);
+}
+
+void StateGame::cheatShowScoreTable() {
+    mGameBoard.showScoreTableForTesting(mGameIndicators.getScore());
+}
+
+#endif

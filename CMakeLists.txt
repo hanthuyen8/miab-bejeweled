@@ -35,6 +35,15 @@ option(BUILD_STATIC "Build a static binary" ${BUILD_STATIC_DEFAULT})
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+# Debug hotkeys that jump straight to a screen (F1-F7, see Game::handleCheatKey).
+# Kept behind a switch because one of them opens the score table, and the real
+# game-over path reports to the MIAB leaderboard — turn this OFF for a build
+# that goes anywhere near production.
+option(ENABLE_CHEATS "Build the debug screen-jump hotkeys" ON)
+if(ENABLE_CHEATS)
+    target_compile_definitions(seajeweled PRIVATE SEAJEWELED_CHEATS)
+endif()
+
 if(EMSCRIPTEN)
     # SDL2/_image/_mixer/_ttf ship as built-in Emscripten ports, enabled via
     # -s flags applied to both compile and link steps.

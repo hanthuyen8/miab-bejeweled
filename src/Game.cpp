@@ -63,9 +63,61 @@ void Game::draw ()
 
 void Game::buttonDown (SDL_Keycode button)
 {
+    if (handleCheatKey(button))
+        return;
+
     if (mCurrentState)
         mCurrentState -> buttonDown(button);
 }
+
+#ifdef SEAJEWELED_CHEATS
+
+bool Game::handleCheatKey (SDL_Keycode button)
+{
+    // Jumping straight to a screen, so testing one doesn't mean playing up to
+    // it. The score table in particular is only reachable after a full
+    // two-minute time trial run.
+    //
+    // Handled here rather than per state so the keys work from anywhere, and
+    // consumed (returning true) so no state also acts on them. F9 is left
+    // alone: the shell binds it to a Spector.js capture.
+    switch (button)
+    {
+    case SDLK_F1: changeState("stateMainMenu");      return true;
+    case SDLK_F2: changeState("stateGameEndless");   return true;
+    case SDLK_F3: changeState("stateGameTimetrial"); return true;
+    case SDLK_F4: changeState("stateHowtoplay");     return true;
+    case SDLK_F5: changeState("stateOptions");       return true;
+
+    case SDLK_F6:
+    case SDLK_F7:
+    {
+        auto game = std::dynamic_pointer_cast<StateGame>(mCurrentState);
+        if (!game) return true;
+
+        if (button == SDLK_F6)
+        {
+            game->cheatAddScore(1337);
+        }
+        else
+        {
+            game->cheatShowScoreTable();
+        }
+        return true;
+    }
+    }
+
+    return false;
+}
+
+#else
+
+bool Game::handleCheatKey (SDL_Keycode)
+{
+    return false;
+}
+
+#endif
 
 void Game::buttonUp (SDL_Keycode button)
 {

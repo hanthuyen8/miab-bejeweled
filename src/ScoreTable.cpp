@@ -58,8 +58,8 @@ void ScoreTable::draw(int x, int y, int z)
     mRenderedHeader.draw(center - mRenderedHeader.getWidth() / 2, y, z);
 
     // Draw the score and its shadow
-    mRenderedScore.draw(center - mRenderedScore.getWidth() / 2, y + 67 + 10, z);
+    mRenderedScore.draw(center - mRenderedScore.getWidth() / 2, y + 67 + 52, z);
 
     // Draw the score and its shadow
-    mRenderedLastScore.draw(center - mRenderedLastScore.getWidth() / 2, y + 67 + 80, z);
+    mRenderedLastScore.draw(center - mRenderedLastScore.getWidth() / 2, y + 67 + 157, z);
 }

@@ -38,6 +38,11 @@ public:
 
 private:
 
+    /// Debug hotkeys for reaching a screen without playing up to it. Returns
+    /// true when the key was a cheat and should not reach the current state.
+    /// Compiled out unless SEAJEWELED_CHEATS is defined (see CMakeLists.txt).
+    bool handleCheatKey(SDL_Keycode button);
+
     std::shared_ptr<State> mCurrentState = nullptr;
     std::string mCurrentStateString;
 

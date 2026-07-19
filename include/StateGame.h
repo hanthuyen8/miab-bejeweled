@@ -79,6 +79,17 @@ public:
 
     int getScore();
 
+#ifdef SEAJEWELED_CHEATS
+    /// Bumps the score readout by `amount`, to see the HUD with a real-looking
+    /// number in it. Debug only, see Game::handleCheatKey.
+    void cheatAddScore(int amount);
+
+    /// Brings up the score table without playing the round out. Deliberately
+    /// does NOT report the score to the host page: the real game-over path
+    /// submits to the MIAB leaderboard, and a fake score must never land there.
+    void cheatShowScoreTable();
+#endif
+
 protected:
     friend class GameIndicators;
     friend class GameBoard;

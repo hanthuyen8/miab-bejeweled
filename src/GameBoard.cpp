@@ -95,6 +95,19 @@ void GameBoard::endGame(int score, int elapsedMs)
     }
 }
 
+#ifdef SEAJEWELED_CHEATS
+
+void GameBoard::showScoreTableForTesting(int score)
+{
+    if (mState == eShowingScoreTable)
+        return;
+
+    scoreTable = std::make_shared<ScoreTable>(mGame, score, mGame->getCurrentState());
+    mState = eShowingScoreTable;
+}
+
+#endif
+
 void GameBoard::loadResources()
 {
     // All board sprites live in a single texture atlas, so every gem, the

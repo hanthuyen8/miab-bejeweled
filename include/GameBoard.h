@@ -22,6 +22,12 @@ public:
     void resetGame();
     void endGame(int score, int elapsedMs = -1);
 
+#ifdef SEAJEWELED_CHEATS
+    /// Shows the score table straight away, skipping the highscore report that
+    /// endGame() does. Debug only — see StateGame::cheatShowScoreTable.
+    void showScoreTableForTesting(int score);
+#endif
+
     void loadResources();
 
     void update();
