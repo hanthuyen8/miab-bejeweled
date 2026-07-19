@@ -3,7 +3,6 @@
 #include "inter.h"
 
 #include "log.h"
-#include "go_font.h"
 #include "Game.h"
 
 #include <fstream>
@@ -37,16 +36,14 @@ ScoreTable::ScoreTable(Game * p, int score, string gameMode) : mGame(p)
 
     scoreBoardWidth = 300;
 
-    // Load necessary fonts
-    GoSDL::Font fntH1, fntH2, fntScore;
-    fntH1.setAll(mGame, Assets::FontMenu, 60);
-    fntH2.setAll(mGame, Assets::FontNormal, 35);
-    fntScore.setAll(mGame, Assets::FontButton, 72);
+    // Fonts for the three lines, and the text each one draws
+    mFontHeader.setAll(mGame->getFonts(), Assets::Font::Menu, 60);
+    mFontScore.setAll(mGame->getFonts(), Assets::Font::Menu, 72);
+    mFontLastScore.setAll(mGame->getFonts(), Assets::Font::Normal, 35);
 
-    // Cache-render texts
-    mRenderedHeader = fntH1.renderTextWithShadow(_("GAME OVER"), {255, 255, 255, 255}, 1, 3, {0, 0, 0, 128});
-    mRenderedScore = fntScore.renderTextWithShadow(std::to_string(score), {255, 255, 255, 255}, 1, 3, {0, 0, 0, 128});
-    mRenderedLastScore = fntH2.renderTextWithShadow(_("Latest high score: ") + std::to_string(lastScore), {255, 255, 255, 255}, 1, 3, {0, 0, 0, 128});
+    mHeaderText = _("GAME OVER");
+    mScoreText = std::to_string(score);
+    mLastScoreText = _("Latest high score: ") + std::to_string(lastScore);
 }
 
 void ScoreTable::draw(int x, int y, int z)
@@ -54,12 +51,17 @@ void ScoreTable::draw(int x, int y, int z)
     // Get the center
     int center = x + scoreBoardWidth / 2;
 
+    const SDL_Color white = {255, 255, 255, 255}, shadow = {0, 0, 0, 128};
+
     // Draw the title and its shadow
-    mRenderedHeader.draw(center - mRenderedHeader.getWidth() / 2, y, z);
+    mFontHeader.drawWithShadow(mHeaderText,
+        center - mFontHeader.getTextWidth(mHeaderText) / 2, y, z, white, 1, 3, shadow);
 
     // Draw the score and its shadow
-    mRenderedScore.draw(center - mRenderedScore.getWidth() / 2, y + 67 + 52, z);
+    mFontScore.drawWithShadow(mScoreText,
+        center - mFontScore.getTextWidth(mScoreText) / 2, y + 67 + 52, z, white, 1, 3, shadow);
 
-    // Draw the score and its shadow
-    mRenderedLastScore.draw(center - mRenderedLastScore.getWidth() / 2, y + 67 + 157, z);
+    // Draw the previous high score and its shadow
+    mFontLastScore.drawWithShadow(mLastScoreText,
+        center - mFontLastScore.getTextWidth(mLastScoreText) / 2, y + 67 + 157, z, white, 1, 3, shadow);
 }

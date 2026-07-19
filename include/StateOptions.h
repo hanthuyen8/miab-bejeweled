@@ -5,7 +5,7 @@
 #include "OptionsManager.h"
 
 #include "go_image.h"
-#include "go_font.h"
+#include "BitmapFont.h"
 
 
 #include <vector>
@@ -67,14 +67,14 @@ private:
     GoSDL::Image mImgHighl;
 
     /// Font for the menu entries
-    GoSDL::Font mFont;
+    BitmapFont mFont;
 
     /// Current highlighted option
     unsigned int mMenuSelectedOption;
 
     /// List of menu options.
     vector<string> mMenuOptions;
-    vector<GoSDL::Image> mMenuRenderedTexts;
+    vector<string> mMenuTexts;
 
     /// It gets executed when the user choses an option. It changes the state
     ///  to the proper one.

@@ -3,8 +3,12 @@
 
 #include <memory>
 
+#include <string>
+#include <vector>
+
 #include "State.h"
 #include "go_image.h"
+#include "BitmapFont.h"
 
 class TextBlock;
 class Game;
@@ -25,12 +29,20 @@ public:
     ~StateHowtoplay();
 
 private:
+    /// Width the body copy wraps to
+    static constexpr int kBodyWidth = 450;
+
     GoSDL::Image mImgBackground;
 
-    GoSDL::Image mImgTitle;
-    GoSDL::Image mImgSubtitle;
+    BitmapFont mFontTitle;
+    BitmapFont mFontSubtitle;
+    BitmapFont mFontBody;
 
-    GoSDL::Image mImgBodyText;
+    std::string mTitleText;
+    std::string mSubtitleText;
+
+    /// Body copy, wrapped once at construction rather than every frame
+    std::vector<std::string> mBodyLines;
 };
 
 #endif /* _STATEHOWTOPLAY_H_ */

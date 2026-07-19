@@ -1,5 +1,7 @@
 #include "StateGame.h"
 
+#include "BitmapFont.h"
+
 #include "Assets.h"
 #include "ZOrder.h"
 #include "Game.h"
@@ -21,10 +23,7 @@ StateGame::StateGame(Game * p) : State(p)
     mGameBoard.setGame(p, this);
 
     // Load the loading screen
-    GoSDL::Font tempLoadingFont;
-    tempLoadingFont.setAll(mGame, Assets::FontMenu, 64);
-
-    mImgLoadingBanner = tempLoadingFont.renderText(_("Loading..."), {255, 255, 255, 255});
+    mFontLoading.setAll(mGame->getFonts(), Assets::Font::Menu, 64);
 }
 
 StateGame::~StateGame ()
@@ -37,7 +36,7 @@ void StateGame::draw()
     // On this state, show the loading screen and switch the state
     if (mState == eInitial)
     {
-        mImgLoadingBanner.draw(280, 250, Z::UIPanel);
+        mFontLoading.draw(_("Loading..."), 280, 250, Z::UIPanel);
         setState(eStartLoading);
 
         return;

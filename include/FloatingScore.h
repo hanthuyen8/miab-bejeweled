@@ -31,7 +31,7 @@ using namespace std;
 
 #include "log.h"
 #include "go_image.h"
-#include "BitmapNumber.h"
+#include "BitmapFont.h"
 #include "Assets.h"
 
 namespace GoSDL {
@@ -49,9 +49,9 @@ namespace GoSDL {
  */
 class FloatingScore{
 public:
-    /// `numbers` must outlive this object; GameBoard owns it.
-    FloatingScore(BitmapNumber * numbers, int score, float x, float y, float z) :
-        mNumbers(numbers), mScoreText(std::to_string(score)),
+    /// `font` must outlive this object; GameBoard owns it.
+    FloatingScore(const BitmapFont * font, int score, float x, float y, float z) :
+        mFont(font), mScoreText(std::to_string(score)),
         x_(x), y_(y), z_(z), mCurrentStep(0), mTotalSteps(50) {
     }
 
@@ -72,16 +72,14 @@ public:
         Uint8 alpha = (Uint8)(p * 255);
 
         // Same glyphs, tinted black and offset both ways, for the outline
-        mNumbers->draw(mScoreText, posX + 2, posY + 2, z_ - 0.1, kFontSize, {0, 0, 0, 255}, alpha);
-        mNumbers->draw(mScoreText, posX - 2, posY - 2, z_ - 0.1, kFontSize, {0, 0, 0, 255}, alpha);
+        mFont->draw(mScoreText, posX + 2, posY + 2, z_ - 0.1, {0, 0, 0, 255}, alpha);
+        mFont->draw(mScoreText, posX - 2, posY - 2, z_ - 0.1, {0, 0, 0, 255}, alpha);
 
-        mNumbers->draw(mScoreText, posX, posY, z_, kFontSize, {255, 255, 255, 255}, alpha);
+        mFont->draw(mScoreText, posX, posY, z_, {255, 255, 255, 255}, alpha);
     }
 private:
-    /// Matches the size the score used to be rasterized at
-    static constexpr int kFontSize = 60;
 
-    BitmapNumber * mNumbers;
+    const BitmapFont * mFont;
     std::string mScoreText;
 
     float x_;

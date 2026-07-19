@@ -5,8 +5,6 @@
 #include "Game.h"
 #include "inter.h"
 
-#include "go_font.h"
-
 StateHowtoplay::StateHowtoplay(Game * p) : State(p)
 {
     lDEBUG << Log::CON("StateHowtoPlay");
@@ -14,28 +12,15 @@ StateHowtoplay::StateHowtoplay(Game * p) : State(p)
     mImgBackground.setWindowAndPath(p, Assets::HowtoScreen);
 
     // Build the title text
-    GoSDL::Font fontTitle;
-
-    fontTitle.setWindow(p);
-    fontTitle.setPathAndSize(Assets::FontMenu, 48);
-
-    mImgTitle = fontTitle.renderTextWithShadow(_("How to play"), {255, 255, 255, 255}, 1, 2, {0, 0, 0, 128});
+    mFontTitle.setAll(p->getFonts(), Assets::Font::Menu, 48);
+    mTitleText = _("How to play");
 
     // Build the subtitle text
-    GoSDL::Font fontSubtitle;
-
-    fontSubtitle.setWindow(p);
-    fontSubtitle.setPathAndSize(Assets::FontMenu, 23);
-
-    std::string subtitleText = _("Press any button to go back");
-
-    mImgSubtitle = fontSubtitle.renderTextWithShadow(subtitleText.c_str(), {255, 255, 255, 255}, 1, 2, {0, 0, 0, 128});
+    mFontSubtitle.setAll(p->getFonts(), Assets::Font::Menu, 23);
+    mSubtitleText = _("Press any button to go back");
 
     // Build the main text
-    GoSDL::Font fontText;
-
-    fontText.setWindow(p);
-    fontText.setPathAndSize(Assets::FontNormal, 28);
+    mFontBody.setAll(p->getFonts(), Assets::Font::Normal, 28);
 
     string bodyText = "";
 
@@ -45,7 +30,8 @@ StateHowtoplay::StateHowtoplay(Game * p) : State(p)
     bodyText += "\n\n";
     bodyText += _("Bonus points are given when more than three identical gems are formed. Sometimes chain reactions, called cascades, are triggered, where chains are formed by the falling gems. Cascades are awarded with bonus points.");
 
-    mImgBodyText = fontText.renderBlockWithShadow(bodyText.c_str(), {255, 255, 255, 255}, 450, 1, 2, {0, 0, 0, 128});
+    // Wrapped once here; drawing it re-wrapped every frame would be wasteful.
+    mBodyLines = mFontBody.wrapText(bodyText, kBodyWidth);
 }
 
 void StateHowtoplay::update() { }
@@ -54,11 +40,20 @@ void StateHowtoplay::draw()
 {
     mImgBackground.draw(0, 0, Z::Howto::Background);
 
-    mImgTitle.draw(300 + 470 / 2 - mImgTitle.getWidth() / 2, 20, Z::Howto::Text);
+    const SDL_Color white = {255, 255, 255, 255}, shadow = {0, 0, 0, 128};
 
-    mImgSubtitle.draw(30, 550, Z::Howto::Text);
+    mFontTitle.drawWithShadow(mTitleText,
+        300 + 470 / 2 - mFontTitle.getTextWidth(mTitleText) / 2, 20,
+        Z::Howto::Text, white, 1, 2, shadow);
 
-    mImgBodyText.draw(310, 110, Z::Howto::Text);
+    mFontSubtitle.drawWithShadow(mSubtitleText, 30, 550, Z::Howto::Text, white, 1, 2, shadow);
+
+    int lineY = 110;
+    for (const std::string & line : mBodyLines)
+    {
+        mFontBody.drawWithShadow(line, 310, lineY, Z::Howto::Text, white, 1, 2, shadow);
+        lineY += mFontBody.getHeight();
+    }
 }
 
 void StateHowtoplay::buttonDown(SDL_Keycode)

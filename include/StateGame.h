@@ -34,7 +34,7 @@
 using namespace std;
 
 #include "go_image.h"
-#include "go_font.h"
+#include "BitmapFont.h"
 #include "go_sound.h"
 #include "go_music.h"
 
@@ -134,7 +134,7 @@ private:
     void showHint();
 
     /// Loading screen image
-    GoSDL::Image mImgLoadingBanner;
+    BitmapFont mFontLoading;
 
     // Background image
     GoSDL::Image mImgBoard;

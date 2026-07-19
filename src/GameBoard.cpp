@@ -146,8 +146,8 @@ void GameBoard::loadResources()
     atlas.setImage(mImgParticle1, Assets::Sprite::Particle1);
     atlas.setImage(mImgParticle2, Assets::Sprite::Particle2);
 
-    // Glyphs the floating scores draw with, from the same atlas
-    mNumbers.loadResources(mGame);
+    // Font the floating scores draw with, from the same atlas
+    mFontFloatingScore.setAll(mGame->getFonts(), Assets::Font::Lcd, 60);
 
     // Initialise the hint
     mHint.setWindow(mGame);
@@ -778,7 +778,7 @@ void GameBoard::createFloatingScores()
         int score = m.size() * pointsPerGem * mMultiplier;
 
         // Create a new floating score image
-        mFloatingScores.emplace_back(FloatingScore(&mNumbers,
+        mFloatingScores.emplace_back(FloatingScore(&mFontFloatingScore,
            score,
            m.midSquare().x,
            m.midSquare().y, Z::FloatingScore));

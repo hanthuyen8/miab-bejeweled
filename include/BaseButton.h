@@ -32,6 +32,7 @@ using namespace std;
 // #include "resManager.h"
 #include "log.h"
 #include "go_image.h"
+#include "BitmapFont.h"
 
 /**
  * @class BaseButton
@@ -50,7 +51,8 @@ public:
 
     BaseButton();
 
-    void set (GoSDL::Window * parentWindow, std::string caption, std::string iconPath);
+    void set (GoSDL::Window * parentWindow, const BitmapFontAtlas * fonts,
+              std::string caption, std::string iconPath);
     void setText(std::string caption);
 
     void draw(int x, int y, double z);
@@ -82,8 +84,9 @@ private:
 
     bool mHasIcon;
 
-    /// Font used for the button's label
-    GoSDL::Image mImgCaption;
+    /// Font and text for the button's label
+    BitmapFont mFontCaption;
+    std::string mCaption;
 
     /// Position of the label within the button
     int mTextHorizontalPosition;

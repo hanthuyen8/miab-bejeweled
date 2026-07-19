@@ -6,8 +6,6 @@
 #include "log.h"
 #include "inter.h"
 
-#include "go_font.h"
-
 #include <cmath>
 #include <tuple>
 
@@ -54,27 +52,22 @@ StateMainMenu::StateMainMenu(Game * p) : State(p)
     mImgHighl.setPath(Assets::MenuHighlight);
 
     // Load the font
-    mFont.setWindow(p);
-    mFont.setPathAndSize(Assets::FontMenu, 26);
+    mFont.setAll(p->getFonts(), Assets::Font::Menu, 26);
 
     // Larger font used for each entry's drop-cap first letter
-    mFontDropCap.setWindow(p);
-    mFontDropCap.setPathAndSize(Assets::FontMenu, 31);
+    mFontDropCap.setAll(p->getFonts(), Assets::Font::Menu, 31);
 
     // Menu target states
     mMenuTargets = {"stateGameTimetrial", "stateGameEndless", "stateHowtoplay", "stateOptions", "stateQuit"};
 
     // Menu text items, split into a drop-cap first letter and the rest
-    SDL_Color menuTextColor = {229, 226, 233, 255}, menuShadowColor = {0, 0, 0, 128};
     for (const std::string & label : {"TIMETRIAL MODE", "ENDLESS MODE", "HOW TO PLAY?", "OPTIONS", "EXIT"})
     {
         std::string translated = _(label.c_str());
         size_t dropCapLen = firstUtf8CharLen(translated);
 
-        mMenuDropCapTexts.push_back(mFontDropCap.renderTextWithShadow(
-            translated.substr(0, dropCapLen), menuTextColor, 0, 2, menuShadowColor));
-        mMenuRestTexts.push_back(mFont.renderTextWithShadow(
-            translated.substr(dropCapLen), menuTextColor, 0, 2, menuShadowColor));
+        mMenuDropCapTexts.push_back(translated.substr(0, dropCapLen));
+        mMenuRestTexts.push_back(translated.substr(dropCapLen));
     }
 
     // Jewel group animation
@@ -134,25 +127,31 @@ void StateMainMenu::draw(){
     double logoScale = 628.0 / 1067.0;
     mImgLogo.draw(86, 86, Z::Menu::Logo, logoScale, logoScale, 0, logoAlfa);
 
+    const SDL_Color menuTextColor = {229, 226, 233, 255}, menuShadowColor = {0, 0, 0, 128};
+
     // Loop to draw the menu items
     for(size_t i = 0, s = (int) mMenuTargets.size(); i < s; ++i)
     {
-        GoSDL::Image & dropCapImg = mMenuDropCapTexts[i];
-        GoSDL::Image & restImg = mMenuRestTexts[i];
+        const std::string & dropCapText = mMenuDropCapTexts[i];
+        const std::string & restText = mMenuRestTexts[i];
+
+        int dropCapWidth = mFontDropCap.getTextWidth(dropCapText);
 
         // Center the combined (drop-cap + rest) text horizontally, and
         // center the row vertically on the taller drop-cap glyph
-        int totalWidth = dropCapImg.getWidth() + restImg.getWidth();
+        int totalWidth = dropCapWidth + mFont.getTextWidth(restText);
         int posX = std::round(800 / 2 - totalWidth / 2);
-        int dropCapY = mMenuYStart + i * mMenuYGap + (mMenuYGap - dropCapImg.getHeight()) / 2;
+        int dropCapY = mMenuYStart + i * mMenuYGap + (mMenuYGap - mFontDropCap.getHeight()) / 2;
 
         // Shift the smaller rest-of-word text down so its baseline lines
         // up with the drop-cap's baseline
         int restY = dropCapY + (mFontDropCap.getAscent() - mFont.getAscent());
 
         // Draw the drop-cap first letter and the rest of the text
-        dropCapImg.draw(posX, dropCapY, Z::Menu::Text);
-        restImg.draw(posX + dropCapImg.getWidth(), restY, Z::Menu::Text);
+        mFontDropCap.drawWithShadow(dropCapText, posX, dropCapY, Z::Menu::Text,
+            menuTextColor, 0, 2, menuShadowColor);
+        mFont.drawWithShadow(restText, posX + dropCapWidth, restY, Z::Menu::Text,
+            menuTextColor, 0, 2, menuShadowColor);
     }
 
     // Draw the menu highlighting, centered within the selected row

@@ -22,16 +22,12 @@ void GameIndicators::setGame (Game * g, StateGame * sg)
 
 void GameIndicators::loadResources()
 {
-    // Score/time digits are drawn from the atlas (bitmap font)
-    mNumbers.loadResources(mGame);
+    // Score/time digits and their labels are drawn from the atlas
+    mFontDigits.setAll(mGame->getFonts(), Assets::Font::Lcd, kDigitFontSize);
+    mFontHeader.setAll(mGame->getFonts(), Assets::Font::Menu, 20);
 
-    // Font to render some headers
-    GoSDL::Font tempHeaderFont;
-    tempHeaderFont.setAll(mGame, Assets::FontButton, 20);
-
-    mImgScoreHeader = tempHeaderFont.renderTextWithShadow(_("SCORE"), {229, 216, 196, 255}, 1, 1, {0, 0, 0, 128});
-
-    mImgTimeHeader = tempHeaderFont.renderTextWithShadow(_("TIME LEFT"), {229, 216, 196, 255}, 1, 1, {0, 0, 0, 128});
+    mScoreHeaderText = _("SCORE");
+    mTimeHeaderText = _("TIME LEFT");
 
     // Background images come from the shared atlas so they batch together
     GoSDL::TextureAtlas atlas;
@@ -44,9 +40,9 @@ void GameIndicators::loadResources()
     atlas.setImage(mImgScoreBackground, Assets::Sprite::ScoreBackground);
 
     // Buttons
-    mHintButton.set(mGame,  _("HINT"), Assets::Sprite::IconHint);
-    mResetButton.set(mGame, _("RESET"), Assets::Sprite::IconRestart);
-    mExitButton.set(mGame, _("EXIT"), Assets::Sprite::IconExit);
+    mHintButton.set(mGame, mGame->getFonts(), _("HINT"), Assets::Sprite::IconHint);
+    mResetButton.set(mGame, mGame->getFonts(), _("RESET"), Assets::Sprite::IconRestart);
+    mExitButton.set(mGame, mGame->getFonts(), _("EXIT"), Assets::Sprite::IconExit);
 
     // Music
     options.loadResources();
@@ -117,10 +113,8 @@ void GameIndicators::draw()
     mResetButton.draw(horizButPos, vertButStart + buttonSpacing, Z::UIPanel);
     mExitButton.draw(horizButPos, vertButStart + 2 * buttonSpacing, Z::UIPanel);
 
-    // LCD colour shared by the score and time digits
+    // LCD colour shared by the score and time digits, and by their labels
     const SDL_Color lcdColor = {229, 216, 196, 255};
-    const int scoreFontSize = 30;
-    const int timeFontSize = 30;
 
     // Score label, score background, time label and time background are
     // stacked top to bottom starting at y=170, sized off the actual image
@@ -134,28 +128,32 @@ void GameIndicators::draw()
     // use a higher z than the background (same convention as BaseButton) —
     // the drawing queue only guarantees ordering by z, not by insertion order.
     // The label is centered on the whole panel width, not just the background.
-    mImgScoreHeader.draw(panelX + panelWidth / 2 - mImgScoreHeader.getWidth() / 2, cursorY, Z::UIText);
-    cursorY += mImgScoreHeader.getHeight() + groupGap;
+    mFontHeader.drawWithShadow(mScoreHeaderText,
+        panelX + panelWidth / 2 - mFontHeader.getTextWidth(mScoreHeaderText) / 2, cursorY,
+        Z::UIText, lcdColor, 1, 1, {0, 0, 0, 128});
+    cursorY += mFontHeader.getHeight() + groupGap;
 
     int scoreBgY = cursorY;
     mImgScoreBackground.draw(panelX, scoreBgY, Z::UIPanel);
-    mNumbers.draw(mScoreText,
-        panelX + (mImgScoreBackground.getWidth() - mNumbers.width(mScoreText, scoreFontSize)) / 2,
-        scoreBgY + (mImgScoreBackground.getHeight() - mNumbers.height(scoreFontSize)) / 2,
-        Z::UIText, scoreFontSize, lcdColor);
+    mFontDigits.draw(mScoreText,
+        panelX + (mImgScoreBackground.getWidth() - mFontDigits.getTextWidth(mScoreText)) / 2,
+        scoreBgY + (mImgScoreBackground.getHeight() - mFontDigits.getHeight()) / 2,
+        Z::UIText, lcdColor);
     cursorY += mImgScoreBackground.getHeight() + groupGap;
 
     // Draw the time
     if (mTimeEnabled) {
-        mImgTimeHeader.draw(panelX + panelWidth / 2 - mImgTimeHeader.getWidth() / 2, cursorY, Z::UIText);
-        cursorY += mImgTimeHeader.getHeight() + groupGap;
+        mFontHeader.drawWithShadow(mTimeHeaderText,
+            panelX + panelWidth / 2 - mFontHeader.getTextWidth(mTimeHeaderText) / 2, cursorY,
+            Z::UIText, lcdColor, 1, 1, {0, 0, 0, 128});
+        cursorY += mFontHeader.getHeight() + groupGap;
 
         int timeBgY = cursorY;
         mImgTimeBackground.draw(panelX, timeBgY, Z::UIPanel);
-        mNumbers.draw(mTimeText,
-            panelX + (mImgTimeBackground.getWidth() - mNumbers.width(mTimeText, timeFontSize)) / 2,
-            timeBgY + (mImgTimeBackground.getHeight() - mNumbers.height(timeFontSize)) / 2,
-            Z::UIText, timeFontSize, lcdColor);
+        mFontDigits.draw(mTimeText,
+            panelX + (mImgTimeBackground.getWidth() - mFontDigits.getTextWidth(mTimeText)) / 2,
+            timeBgY + (mImgTimeBackground.getHeight() - mFontDigits.getHeight()) / 2,
+            Z::UIText, lcdColor);
     }
 }
 

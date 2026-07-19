@@ -6,8 +6,6 @@
 #include "log.h"
 #include "inter.h"
 
-#include "go_font.h"
-
 #include <cmath>
 #include <tuple>
 
@@ -36,8 +34,7 @@ StateOptions::StateOptions(Game * p) : State(p)
     mImgHighl.setPath(Assets::MenuHighlight);
 
     // Load the font
-    mFont.setWindow(p);
-    mFont.setPathAndSize(Assets::FontMenu, 30);
+    mFont.setAll(p->getFonts(), Assets::Font::Menu, 30);
 
     // Menu target states
     mMenuOptions = {"setMusic", "setSound", "setFullscreen", "back"};
@@ -74,11 +71,12 @@ void StateOptions::draw(){
     for(size_t i = 0, s = (int) mMenuOptions.size(); i < s; ++i)
     {
         // Calculate the horizontal and vertical positions
-		int posX = std::round(800 / 2 - mMenuRenderedTexts[i].getWidth() / 2),
+		int posX = std::round(800 / 2 - mFont.getTextWidth(mMenuTexts[i]) / 2),
             posY = mMenuYStart + i * mMenuYGap;
 
         // Draw the text and the shadow
-        mMenuRenderedTexts[i].draw(posX, posY, Z::Menu::Text);
+        mFont.drawWithShadow(mMenuTexts[i], posX, posY, Z::Menu::Text,
+            {255, 255, 255, 255}, 0, 2, {0, 0, 0, 128});
     }
 
     // Draw the menu highlighting
@@ -163,7 +161,7 @@ void StateOptions::moveDown() {
 
 void StateOptions::updateButtonTexts()
 {
-    vector<GoSDL::Image> renderedTexts;
+    vector<string> texts;
 
     // Option strings
     std::string musicText = _("Music: ");
@@ -175,13 +173,12 @@ void StateOptions::updateButtonTexts()
     fullscreenText += std::string(mOptions.getFullscreenEnabled() ? _("On") : _("Off"));
 
     // Menu text items
-    SDL_Color menuTextColor = {255, 255, 255, 255}, menuShadowColor = {0,0,0, 128};
-    renderedTexts.push_back(mFont.renderTextWithShadow(musicText, menuTextColor, 0, 2, menuShadowColor));
-    renderedTexts.push_back(mFont.renderTextWithShadow(soundText, menuTextColor, 0, 2, menuShadowColor));
-    renderedTexts.push_back(mFont.renderTextWithShadow(fullscreenText, menuTextColor, 0, 2, menuShadowColor));
-    renderedTexts.push_back(mFont.renderTextWithShadow(_("Back"), menuTextColor, 0, 2, menuShadowColor));
+    texts.push_back(musicText);
+    texts.push_back(soundText);
+    texts.push_back(fullscreenText);
+    texts.push_back(_("Back"));
 
-    mMenuRenderedTexts.swap(renderedTexts);
+    mMenuTexts.swap(texts);
 }
 
 void StateOptions::optionChosen()

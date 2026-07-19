@@ -169,7 +169,7 @@ int GoSDL::Image::getHeight()
 }
 
 
-bool GoSDL::Image::draw(int x, int y, int z, double factorX, double factorY, float angle, Uint8 alpha, SDL_Color color)
+bool GoSDL::Image::draw(int x, int y, int z, double factorX, double factorY, float angle, Uint8 alpha, SDL_Color color) const
 {
     if (mParentWindow == NULL)
     {

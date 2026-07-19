@@ -25,10 +25,18 @@ namespace Assets {
     constexpr const char * MenuLogo       = "media/menu/mainMenuLogo.png";
     constexpr const char * MenuHighlight  = "media/menu/menuHighlight.png";
 
-    // --- Fonts ---
-    constexpr const char * FontNormal = "media/fonts/fuenteNormal.ttf";
-    constexpr const char * FontMenu   = "media/fonts/fuenteMenu.ttf";
-    constexpr const char * FontButton = "media/fonts/fuenteButton.ttf";
+    // --- Bitmap fonts ---
+    // Glyph metrics for the faces baked into the atlas. The source .ttf files
+    // live in assets/fonts/ and are build-time inputs only: nothing under
+    // media/ is a font any more, so no TTF is shipped or preloaded.
+    constexpr const char * FontMetrics = "media/fonts.json";
+
+    // Face names, as keyed in fonts.json (see texture-packer/generate_glyphs.py).
+    namespace Font {
+        constexpr const char * Menu   = "menu";    // Quicksand SemiBold — menus, buttons, headings
+        constexpr const char * Normal = "normal";  // Miso Regular — body copy
+        constexpr const char * Lcd    = "lcd";     // Quicksand Bold — score/time readouts
+    }
 
     // --- Sounds ---
     constexpr const char * SfxMatch1 = "media/sounds/match1.ogg";
@@ -60,19 +68,8 @@ namespace Assets {
         constexpr const char * IconRestart = "iconRestart.png";
         constexpr const char * IconExit    = "iconExit.png";
 
-        // Bitmap-font glyphs (Quicksand-Bold, baked white @72px). Used by the
-        // score/time readouts and by the floating scores.
-        constexpr const char * Digit0 = "digit0.png";
-        constexpr const char * Digit1 = "digit1.png";
-        constexpr const char * Digit2 = "digit2.png";
-        constexpr const char * Digit3 = "digit3.png";
-        constexpr const char * Digit4 = "digit4.png";
-        constexpr const char * Digit5 = "digit5.png";
-        constexpr const char * Digit6 = "digit6.png";
-        constexpr const char * Digit7 = "digit7.png";
-        constexpr const char * Digit8 = "digit8.png";
-        constexpr const char * Digit9 = "digit9.png";
-        constexpr const char * Colon  = "colon.png";
+        // Font glyphs also live in this atlas, but they are looked up through
+        // media/fonts.json rather than by name here -- see BitmapFont.
     }
 }
 

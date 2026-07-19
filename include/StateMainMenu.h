@@ -5,7 +5,7 @@
 #include "JewelGroupAnim.h"
 
 #include "go_image.h"
-#include "go_font.h"
+#include "BitmapFont.h"
 
 
 #include <vector>
@@ -84,10 +84,10 @@ private:
     GoSDL::Image mImgHighl;
 
     /// Font for the menu entries
-    GoSDL::Font mFont;
+    BitmapFont mFont;
 
     /// Larger font used for each entry's drop-cap first letter
-    GoSDL::Font mFontDropCap;
+    BitmapFont mFontDropCap;
 
     /// Class for the animation of the decorating jewels
     JewelGroupAnim mJewelAnimation;
@@ -98,10 +98,10 @@ private:
     /// List of menu options.
     vector<string> mMenuTargets;
 
-    /// Each entry's first letter (rendered with mFontDropCap) and the
-    /// remaining text (rendered with mFont), drawn side by side
-    vector<GoSDL::Image> mMenuDropCapTexts;
-    vector<GoSDL::Image> mMenuRestTexts;
+    /// Each entry's first letter (drawn with mFontDropCap) and the
+    /// remaining text (drawn with mFont), drawn side by side
+    vector<string> mMenuDropCapTexts;
+    vector<string> mMenuRestTexts;
 
     /// It gets executed when the user choses an option. It changes the state
     ///  to the proper one.

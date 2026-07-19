@@ -1,6 +1,5 @@
 #include "BaseButton.h"
 
-#include "go_font.h"
 #include "go_textureatlas.h"
 #include "Assets.h"
 #include "ZOrder.h"
@@ -11,9 +10,14 @@
 BaseButton::BaseButton() { }
 
 
-void BaseButton::set (GoSDL::Window * parentWindow, std::string caption, std::string iconPath)
+void BaseButton::set (GoSDL::Window * parentWindow, const BitmapFontAtlas * fonts,
+                      std::string caption, std::string iconPath)
 {
     mParentWindow = parentWindow;
+
+    // The caption font is set up once here rather than per setText() call: the
+    // old code reopened the .ttf every time the caption changed.
+    mFontCaption.setAll(fonts, Assets::Font::Menu, 20);
 
     // Background and icon come from the shared atlas so they batch with the
     // rest of the UI/board sprites instead of using their own textures.
@@ -37,16 +41,13 @@ void BaseButton::set (GoSDL::Window * parentWindow, std::string caption, std::st
 
 void BaseButton::setText(std::string caption)
 {
-    // Load the font for the button caption
-    GoSDL::Font textFont;
-    textFont.setAll(mParentWindow, Assets::FontButton, 20);
-
     // Upper-case the caption (ASCII only, so multi-byte translated text isn't corrupted)
     std::transform(caption.begin(), caption.end(), caption.begin(),
         [](unsigned char c) { return std::toupper(c); });
 
-    // Generate the button caption texture
-    mImgCaption = textFont.renderTextWithShadow(caption, {255, 255, 255, 255}, 1, 2, {0, 0, 0, 128});
+    mCaption = std::move(caption);
+
+    int captionWidth = mFontCaption.getTextWidth(mCaption);
 
     // Calculate the position of the text: leave a left-hand column as wide
     // as the icon, then center the caption within the remaining space
@@ -54,12 +55,12 @@ void BaseButton::setText(std::string caption)
     {
         int iconZoneWidth = mImgIcon.getWidth();
 
-        mTextHorizontalPosition = iconZoneWidth + (mImgBackground.getWidth() - iconZoneWidth) / 2 - mImgCaption.getWidth() / 2;
+        mTextHorizontalPosition = iconZoneWidth + (mImgBackground.getWidth() - iconZoneWidth) / 2 - captionWidth / 2;
     }
 
     else
     {
-        mTextHorizontalPosition = mImgBackground.getWidth() / 2 - mImgCaption.getWidth() / 2;
+        mTextHorizontalPosition = mImgBackground.getWidth() / 2 - captionWidth / 2;
     }
 }
 
@@ -75,8 +76,9 @@ void BaseButton::draw(int x, int y, double z)
         mImgIcon.draw(x + iconPad + 3, y + iconPad - 3, z + Z::Button::Icon);
     }
 
-    int captionY = y + (mImgBackground.getHeight() - mImgCaption.getHeight()) / 2;
-    mImgCaption.draw(x + mTextHorizontalPosition, captionY - 2, z + Z::Button::Caption);
+    int captionY = y + (mImgBackground.getHeight() - mFontCaption.getHeight()) / 2;
+    mFontCaption.drawWithShadow(mCaption, x + mTextHorizontalPosition, captionY - 2,
+        z + Z::Button::Caption, {255, 255, 255, 255}, 1, 2, {0, 0, 0, 128});
 
     mImgBackground.draw(x, y, z);
 

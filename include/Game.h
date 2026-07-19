@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 
+#include "BitmapFont.h"
 #include "GameSounds.h"
 #include "go_window.h"
 #include "go_image.h"
@@ -36,6 +37,13 @@ public:
         return &mGameSounds;
     }
 
+    /// Glyph atlas shared by every state. Loaded once in the constructor and
+    /// valid for the lifetime of the Game, so states can hold BitmapFonts
+    /// pointing into it without owning anything.
+    const BitmapFontAtlas *getFonts() const {
+        return &mFonts;
+    }
+
 private:
 
     /// Debug hotkeys for reaching a screen without playing up to it. Returns
@@ -50,6 +58,9 @@ private:
 
     /// Sounds controller
     GameSounds mGameSounds;
+
+    /// Every baked glyph, for all faces and sizes
+    BitmapFontAtlas mFonts;
 };
 
 #endif /* _GAME_H_ */

@@ -21,6 +21,13 @@ Game::Game ()
     mMouseCursor.setWindow(this);
     mMouseCursor.setPath(Assets::HandCursor);
 
+    // Must happen before the first changeState(): states build their fonts in
+    // their constructors and read metrics straight out of this.
+    if (!mFonts.load(this, Assets::AtlasImage, Assets::AtlasData, Assets::FontMetrics))
+    {
+        lDEBUG << "Game: font atlas failed to load, text will not render";
+    }
+
     changeState("stateMainMenu");
 
     // Xin highscore hiện tại của user từ host page (MIAB), nếu có nhúng qua iframe. Async, không

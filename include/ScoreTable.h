@@ -28,6 +28,7 @@
 
 
 #include "go_image.h"
+#include "BitmapFont.h"
 #include "OptionsManager.h"
 
 
@@ -54,14 +55,14 @@ public:
 
 private:
 
-    /// Image for the rendered header
-    GoSDL::Image mRenderedHeader;
+    /// Fonts and text for the three lines of the table
+    BitmapFont mFontHeader;
+    BitmapFont mFontScore;
+    BitmapFont mFontLastScore;
 
-    /// Image for the rendered score
-    GoSDL::Image mRenderedScore;
-
-    /// Image for the last high score
-    GoSDL::Image mRenderedLastScore;
+    std::string mHeaderText;
+    std::string mScoreText;
+    std::string mLastScoreText;
 
     /// Width of the score board
     int scoreBoardWidth;

@@ -121,8 +121,8 @@ private:
     /// Pre-rendered sweeping highlight for the gems above
     GemShine mGemShine;
 
-    /// Atlas glyphs the floating scores draw themselves with
-    BitmapNumber mNumbers;
+    /// Font the floating scores draw themselves with
+    BitmapFont mFontFloatingScore;
 
     /// Animation current step
     int mAnimationCurrentStep = 0;

@@ -1,5 +1,10 @@
 # Báo cáo Step 4 — Bitmap font cho số điểm/thời gian
 
+> **Đã bị thay thế bởi [step5-bitmap-font-atlas-report.md](step5-bitmap-font-atlas-report.md).**
+> `BitmapNumber`, `Assets::Sprite::Digit*`/`Colon` và thư mục `assets/glyphs/lcd/`
+> mô tả dưới đây **không còn tồn tại** — toàn bộ font (không riêng chữ số) nay đi
+> qua `BitmapFont` + `media/fonts.json`. Giữ lại làm ghi chép lịch sử.
+
 Tham chiếu kế hoạch: [`performance-optimization-plan.md`](performance-optimization-plan.md) — mục **4**.
 Tiếp nối [Step 2](step2-texture-atlas-report.md) (texture atlas) và bản
 [refactor Assets/ZOrder](refactor-assets-zorder-report.md).

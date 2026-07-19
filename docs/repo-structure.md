@@ -22,10 +22,8 @@ media/                      ← runtime assets (shipped / preloaded)
         board.png           (800×600, vẽ 1 lần)
         howtoScreen.png     (800×600, màn hướng dẫn)
         handCursor.png      (con trỏ chuột)
-    fonts/
-        fuenteNormal.ttf    (body text)
-        fuenteMenu.ttf      (tiêu đề/menu — Quicksand-SemiBold)
-        fuenteButton.ttf    (caption nút, label score/time, số điểm ScoreTable)
+    fonts.json              ← metric glyph bitmap (advance/offset/baseline)
+                              cho từng face+size — BitmapFont đọc file này
     sounds/
         match1.ogg, match2.ogg, match3.ogg
         select.ogg, fall.ogg, music.ogg
@@ -41,11 +39,15 @@ assets/                     ← source art (NOT shipped, TexturePacker inputs)
         iconHint/Restart/Exit.png                          (40×41)
         buttonBackground.png, scoreBackground.png, timeBackground.png
         partc1.png, partc2.png                             (108×108)
-    glyphs/lcd/             ← chữ số bitmap 0-9 + ':' cho atlas
-                              (thư mục còn tên "lcd" nhưng nay bake từ
-                               Quicksand-Bold — xem Ghi chú)
-    fonts/
-        Quicksand-Bold.ttf  ← CHỈ để bake glyph, không ship runtime
+    glyphs/                 ← glyph bitmap sinh ra cho atlas, 1 thư mục mỗi
+                              face+size (generate_glyphs.py tự xoá & tạo lại)
+        menu40/, menu72/    (83 glyph — UI, nút, tiêu đề)
+        normal40/           (83 glyph — body text)
+        lcd40/, lcd72/      (11 glyph 0-9 + ':' — số score/time)
+    fonts/                  ← CHỈ để bake glyph, KHÔNG ship runtime
+        Quicksand-SemiBold.ttf  (face "menu")
+        Miso-Regular.ttf        (face "normal")
+        Quicksand-Bold.ttf      (face "lcd")
     photoshop/              ← file export gốc trước khi resize
 
 platform/
@@ -55,9 +57,11 @@ platform/
 
 texture-packer/
     atlas.tps               ← project TexturePacker:
-                              source = ../assets/sprites/*.png + ../assets/glyphs/lcd/*.png
+                              source = ../assets/sprites/ + ../assets/glyphs/*/
                               output = ../media/atlas.png + ../media/atlas.json
-    generate_glyphs.py      ← render glyph số từ Quicksand-Bold ra PNG
+    generate_glyphs.py      ← bake glyph từ assets/fonts/*.ttf ra PNG + fonts.json
+    build_atlas.sh          ← chạy generate_glyphs.py rồi repack atlas bằng
+                              TexturePacker CLI (không cần mở GUI)
 ```
 
 ## Quy ước code
@@ -115,11 +119,16 @@ texture cache trong `GoSDL::Image`, mọi Image nạp cùng file atlas chia sẻ
   đây). Xem `performance-optimization-plan.md` và các `stepN-*-report.md`.
 - Phím tắt debug, cách đo draw call, bẫy build: [dev-tooling.md](dev-tooling.md).
 - Z-order layering đã gom vào `include/ZOrder.h` (xem mục "Draw depth" ở trên).
-- **Font LCD đã bị gỡ bỏ.** `fuentelcd.ttf` không còn trong repo; chữ số giờ
-  vẽ bằng glyph bitmap trong atlas (bake từ Quicksand-Bold), số điểm màn kết
-  thúc dùng `fuenteButton.ttf`. Thư mục `assets/glyphs/lcd/` vẫn giữ tên cũ vì
-  đổi tên sẽ phải sửa cả `generate_glyphs.py` lẫn source list trong
-  `atlas.tps` — thuần cosmetic, chưa làm.
+- **Không còn TTF nào được ship.** Toàn bộ chữ trong game vẽ bằng glyph
+  bitmap trong atlas (`BitmapFont` + `media/fonts.json`). Ba file `.ttf` chỉ
+  còn nằm ở `assets/fonts/` làm input lúc bake, nên `media/` không có font và
+  gói `.data` nhẹ đi ~217KB. `SDL_ttf` vẫn được link và `go_font.h/cpp` vẫn
+  còn trong repo, nhưng **không còn code nào gọi tới** — và vì TTF không nằm
+  trong `media/` nữa nên đường dẫn runtime cũ cũng không load được.
+- **Đổi charset thì phải bake lại.** `CHARSET` trong `generate_glyphs.py` quyết
+  định glyph nào tồn tại; ký tự ngoài danh sách sẽ bị bỏ qua khi vẽ (không
+  advance). Text được xử lý theo byte, không phải UTF-8 — bản dịch gettext có
+  ký tự ngoài ASCII sẽ không hiện. Sau khi sửa, chạy `texture-packer/build_atlas.sh`.
 - **Sửa `platform/web/shell.html` thì phải relink.** Shell là link input nhưng
   CMake không tự suy ra từ flag `--shell-file`, nên `CMakeLists.txt` khai báo
   `LINK_DEPENDS` cho nó. Cùng loại bẫy với `media/` (xem

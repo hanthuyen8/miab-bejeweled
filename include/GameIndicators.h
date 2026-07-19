@@ -1,12 +1,11 @@
 #ifndef GAME_INDICATORS_H
 #define GAME_INDICATORS_H
 
-#include "go_font.h"
+#include "BitmapFont.h"
 #include "go_image.h"
 #include "go_music.h"
 
 #include "BaseButton.h"
-#include "BitmapNumber.h"
 
 #include "OptionsManager.h"
 
@@ -65,22 +64,26 @@ private:
 
     bool mTimeEnabled;
 
-    /// Bitmap-font renderer for the score/time digits (from the atlas)
-    BitmapNumber mNumbers;
+    /// Size the score and time readouts are drawn at
+    static constexpr int kDigitFontSize = 30;
+
+    /// Fonts for the readout digits and the labels above them
+    BitmapFont mFontDigits;
+    BitmapFont mFontHeader;
 
     /// Current score/time strings to draw (updated only when the value changes)
     std::string mScoreText = "0";
     std::string mTimeText;
 
-   // Background of the timer
+    // Background of the timer
     GoSDL::Image mImgTimeBackground;
 
     /// Background for the current-score board
     GoSDL::Image mImgScoreBackground;
 
-    /// Header labels ("score" / "time left"), still rendered with SDL_ttf
-    GoSDL::Image mImgTimeHeader;
-    GoSDL::Image mImgScoreHeader;
+    /// Header labels, drawn from the atlas like everything else
+    std::string mTimeHeaderText;
+    std::string mScoreHeaderText;
 
     /// @{
     /// @name Buttons of the interface
