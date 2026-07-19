@@ -13,7 +13,7 @@ using namespace std::placeholders;
 
 namespace {
     // How often the highlight crosses the board
-    constexpr Uint32 kGlintCycleMs = 4000;
+    constexpr Uint32 kGlintCycleMs = 14000;
 
     // The one speed knob: how long the light takes to travel one cell width.
     // Everything else below is derived from it, because the highlight has to be

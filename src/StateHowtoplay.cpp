@@ -13,11 +13,11 @@ StateHowtoplay::StateHowtoplay(Game * p) : State(p)
 
     // Build the title text
     mFontTitle.setAll(p->getFonts(), Assets::Font::Menu, 48);
-    mTitleText = _("How to play");
+    mTitleText = _("");
 
     // Build the subtitle text
-    mFontSubtitle.setAll(p->getFonts(), Assets::Font::Menu, 23);
-    mSubtitleText = _("Press any button to go back");
+    mFontSubtitle.setAll(p->getFonts(), Assets::Font::Menu, 20);
+    mSubtitleText = _("Click to go back");
 
     // Build the main text
     mFontBody.setAll(p->getFonts(), Assets::Font::Normal, 28);
@@ -46,7 +46,7 @@ void StateHowtoplay::draw()
         300 + 470 / 2 - mFontTitle.getTextWidth(mTitleText) / 2, 20,
         Z::Howto::Text, white, 1, 2, shadow);
 
-    mFontSubtitle.drawWithShadow(mSubtitleText, 30, 550, Z::Howto::Text, white, 1, 2, shadow);
+    mFontSubtitle.drawWithShadow(mSubtitleText, 70, 545, Z::Howto::Text, white, 1, 2, shadow);
 
     int lineY = 110;
     for (const std::string & line : mBodyLines)
