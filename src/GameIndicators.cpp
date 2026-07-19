@@ -113,6 +113,26 @@ void GameIndicators::draw()
     mResetButton.draw(horizButPos, vertButStart + buttonSpacing, Z::UIPanel);
     mExitButton.draw(horizButPos, vertButStart + 2 * buttonSpacing, Z::UIPanel);
 
+    // Hover feedback is resolved here rather than in an update() because the
+    // buttons' hitboxes are derived from their last draw position — this is the
+    // first point in the frame where they are current. Every button must be
+    // refreshed (no short-circuiting), otherwise the ones after a hovered
+    // button keep a stale flag and re-fire when the pointer reaches them.
+    if (mGame->getMouseActive())
+    {
+        unsigned int mX = mGame->getMouseX();
+        unsigned int mY = mGame->getMouseY();
+
+        bool entered = mHintButton.enteredHover(mX, mY);
+        entered = mResetButton.enteredHover(mX, mY) || entered;
+        entered = mExitButton.enteredHover(mX, mY) || entered;
+
+        if (entered)
+        {
+            mGame->getGameSounds()->playSoundButtonHover();
+        }
+    }
+
     // LCD colour shared by the score and time digits, and by their labels
     const SDL_Color lcdColor = {229, 216, 196, 255};
 
@@ -162,18 +182,22 @@ void GameIndicators::click(int mouseX, int mouseY)
     // Exit button was clicked
     if (mExitButton.clicked(mouseX, mouseY))
     {
+        // Played before the state change, which tears this state down
+        mGame->getGameSounds()->playSoundButtonClick();
         mGame -> changeState("stateMainMenu");
     }
 
     // Hint button was clicked
     else if (mHintButton.clicked(mouseX, mouseY))
     {
+        mGame->getGameSounds()->playSoundButtonClick();
         mStateGame -> showHint();
     }
 
     // Reset button was clicked
     else if (mResetButton.clicked(mouseX, mouseY))
     {
+        mGame->getGameSounds()->playSoundButtonClick();
         mStateGame -> resetGame();
     }
 }

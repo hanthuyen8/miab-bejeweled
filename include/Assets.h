@@ -44,6 +44,9 @@ namespace Assets {
     constexpr const char * SfxMatch3 = "media/sounds/match3.ogg";
     constexpr const char * SfxSelect = "media/sounds/select.ogg";
     constexpr const char * SfxFall   = "media/sounds/fall.ogg";
+    constexpr const char * SfxButtonHover = "media/sounds/buttonHover.ogg";
+    constexpr const char * SfxButtonClick = "media/sounds/buttonClick.ogg";
+    constexpr const char * SfxError  = "media/sounds/error.ogg";
     constexpr const char * Music     = "media/sounds/music.ogg";
 
     // --- Atlas sprite names (frame keys inside atlas.json) ---

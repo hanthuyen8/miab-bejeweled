@@ -62,5 +62,5 @@ Do an out-of-source compilation and run the program:
 
 ## Music licensing
 
-The music in the game is [Easy Lemon by Kevin MacLeod](https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200076)
-Licensed under [Creative Commons: By Attribution 3.0](https://creativecommons.org/licenses/by/3.0/)
+The music in the game is [Night Prowler by Section 31 - Tech](https://opengameart.org/content/night-prowler),
+licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/).

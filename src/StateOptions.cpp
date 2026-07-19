@@ -57,7 +57,14 @@ void StateOptions::update(){
 
         if(mY >= mMenuYStart && mY < mMenuYEnd)
         {
-            mMenuSelectedOption = (mY - mMenuYStart) / mMenuYGap;
+            unsigned int hovered = (mY - mMenuYStart) / mMenuYGap;
+
+            // See StateMainMenu::update() — same edge-triggered hover feedback.
+            if (hovered != mMenuSelectedOption)
+            {
+                mMenuSelectedOption = hovered;
+                mGame->getGameSounds()->playSoundButtonHover();
+            }
         }
     }
 }
@@ -140,7 +147,7 @@ void StateOptions::mouseButtonDown(Uint8 button)
 }
 
 void StateOptions::moveUp() {
-    mGame->getGameSounds()->playSoundSelect();
+    mGame->getGameSounds()->playSoundButtonHover();
 
     if (mMenuSelectedOption == 0) {
         mMenuSelectedOption = mMenuOptions.size() - 1;
@@ -150,7 +157,7 @@ void StateOptions::moveUp() {
 }
 
 void StateOptions::moveDown() {
-    mGame->getGameSounds()->playSoundSelect();
+    mGame->getGameSounds()->playSoundButtonHover();
 
     if (mMenuSelectedOption == mMenuOptions.size() - 1) {
         mMenuSelectedOption = 0;
@@ -185,6 +192,8 @@ void StateOptions::optionChosen()
 {
     string option = mMenuOptions[mMenuSelectedOption];
     if (option == "back") {
+        // Played before the state change, which tears this state down
+        mGame->getGameSounds()->playSoundButtonClick();
         mGame -> changeState("stateMainMenu");
     } else {
         if (option == "setMusic") {
@@ -197,6 +206,12 @@ void StateOptions::optionChosen()
             mGame->setFullscreen(mOptions.getFullscreenEnabled());
         }
         updateButtonTexts();
+
+        // Played after the toggle, not before: on the "sound" row that ordering
+        // is what makes switching it on confirm itself audibly, and switching
+        // it off fall silent at once — loadResources() has already unloaded the
+        // samples by this point.
+        mGame->getGameSounds()->playSoundButtonClick();
     }
 }
 

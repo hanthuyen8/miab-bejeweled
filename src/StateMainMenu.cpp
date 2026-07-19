@@ -108,7 +108,16 @@ void StateMainMenu::update(){
 
         if(mY >= mMenuYStart && mY < mMenuYEnd)
         {
-            mMenuSelectedOption = (mY - mMenuYStart) / mMenuYGap;
+            unsigned int hovered = (mY - mMenuYStart) / mMenuYGap;
+
+            // Only the change fires the sound, not every frame spent on a row.
+            // Keyboard navigation can't double up here: getMouseActive() goes
+            // false on key press, and moveUp/moveDown play the sound themselves.
+            if (hovered != mMenuSelectedOption)
+            {
+                mMenuSelectedOption = hovered;
+                mGame->getGameSounds()->playSoundButtonHover();
+            }
         }
     }
 }
@@ -222,7 +231,7 @@ void StateMainMenu::mouseButtonDown(Uint8 button)
 }
 
 void StateMainMenu::moveUp() {
-    mGame->getGameSounds()->playSoundSelect();
+    mGame->getGameSounds()->playSoundButtonHover();
 
     if (mMenuSelectedOption == 0) {
         mMenuSelectedOption = mMenuTargets.size() - 1;
@@ -232,7 +241,7 @@ void StateMainMenu::moveUp() {
 }
 
 void StateMainMenu::moveDown() {
-    mGame->getGameSounds()->playSoundSelect();
+    mGame->getGameSounds()->playSoundButtonHover();
 
     if (mMenuSelectedOption == mMenuTargets.size() - 1) {
         mMenuSelectedOption = 0;
@@ -243,6 +252,8 @@ void StateMainMenu::moveDown() {
 
 void StateMainMenu::optionChosen()
 {
+    // Played before the state change, which tears this state down
+    mGame->getGameSounds()->playSoundButtonClick();
     mGame -> changeState(mMenuTargets[mMenuSelectedOption]);
 }
 

@@ -95,3 +95,15 @@ bool BaseButton::clicked(unsigned int mX, unsigned int mY)
         return false;
     }
 }
+
+bool BaseButton::enteredHover(unsigned int mX, unsigned int mY)
+{
+    // clicked() is a plain hit test despite the name, so it doubles as the
+    // hover test — keeping one hitbox means the two can never disagree.
+    bool nowHovered = clicked(mX, mY);
+    bool entered = nowHovered && !mHovered;
+
+    mHovered = nowHovered;
+
+    return entered;
+}

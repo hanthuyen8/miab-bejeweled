@@ -247,6 +247,65 @@ Docs lịch sử khác (`step1/2/4-*-report.md`, `performance-optimization-plan.
 vẫn còn nhắc Vita — **giữ nguyên**, vì đó là báo cáo ghi lại quyết định tại
 thời điểm viết, không phải code sống cần đồng bộ.
 
+## 6. Âm thanh giao diện (hover / click / error)
+
+Ba sfx mới: `media/sounds/buttonHover.ogg`, `buttonClick.ogg`, `error.ogg`
+(nguồn wav tải về, convert tại chỗ — xem mục toolchain bên dưới).
+
+- **Gating âm thanh là load-time, không phải play-time.** `GoSDL::Sound::play()`
+  không hề kiểm tra option; tắt tiếng chỉ hoạt động vì
+  `GameSounds::loadResources()` gọi `unload()` và `play()` no-op khi
+  `mSample == nullptr`. Nên mỗi sfx mới **phải khai báo ở cả hai nhánh** của
+  `loadResources()` — thiếu nhánh unload thì vẫn kêu khi user tắt sound, mà
+  không có gì báo lỗi.
+- **`BaseButton::enteredHover()`** — edge-triggered (trả `true` đúng frame chuột
+  vào), dùng lại chính `clicked()` làm hit test. `clicked()` tuy tên vậy nhưng
+  là phép thử hình học thuần; giữ một hitbox duy nhất để hover và click không
+  bao giờ lệch nhau.
+- **Hover của 3 nút giải quyết trong `GameIndicators::draw()`**, không phải
+  `update()`. Lý do: hitbox lấy từ `mLastX/mLastY` do `draw()` ghi, nên đây là
+  điểm đầu tiên trong frame chúng còn đúng. (`StateGame::update()` cũng không
+  dùng được — nó là pure virtual, mỗi mode override riêng.)
+  - **Cả 3 nút phải được refresh, không short-circuit `||`** — nếu dừng sớm ở
+    nút đang hover thì các nút sau giữ cờ cũ và kêu sai lúc chuột tới.
+- **Menu (main + options): chỉ phát khi đổi dòng**, không phải mỗi frame chuột
+  nằm trên dòng đó. Bàn phím không bị chồng tiếng vì `getMouseActive()` hoá
+  `false` lúc nhấn phím, còn `moveUp/moveDown` tự phát tiếng của chúng.
+- **Bàn phím đổi từ `select.ogg` sang hover sound** ở cả hai menu để chuột và
+  bàn phím nghe giống nhau. `select.ogg` vẫn giữ nguyên cho việc chọn gem.
+- **Thứ tự phát ở `StateOptions::optionChosen()` có chủ đích**: nhánh "back"
+  phát *trước* `changeState()` (state bị hủy sau đó); nhánh toggle phát *sau*
+  khi đã đổi option, nhờ vậy bật sound thì nghe xác nhận ngay còn tắt sound thì
+  im lập tức — `loadResources()` đã unload sample xong ở thời điểm đó.
+- Cân bằng âm lượng nằm trọn ở `GameSounds.cpp`: hover 0.2 → match 0.25 →
+  select/fall 0.3 → click 0.35 → **error 1.0** (to nhất, xem dưới).
+
+### Peak không phải là độ to — bài học từ error sound
+
+Bản error đầu tiên có peak `-3 dB` (ngang mọi sfx khác) nhưng **mean chỉ
+`-23 dB`**: một tiếng "tách" transient rất ngắn, đỉnh cao mà năng lượng trung
+bình thấp. Chỉnh `play()` lên tận `1.0` vẫn nghe nhỏ, vì `Mix_VolumeChunk` chỉ
+khuếch đại một cú nảy ~20ms. Tai nghe theo **mean/LUFS**, không theo peak.
+
+Bản thay thế (buzz 8-bit 0.59s, năng lượng trải đều) có mean `-10.8 dB` /
+`-9.4 LUFS` → **to hơn ~12 dB** ở cùng volume. Khi cần tăng độ to, đo
+`mean_volume` và `ebur128` chứ đừng chỉ nhìn `max_volume`.
+
+### Toolchain convert audio (chỗ này nhiều bẫy)
+
+- `ffmpeg` của Homebrew **không build kèm `libvorbis`**, chỉ có encoder `vorbis`
+  native. Hệ quả: phải thêm `-strict -2`, **không dùng được `-q:a`** (phải đặt
+  bitrate cố định), và **bắt buộc stereo** — encoder native từ chối mono, báo
+  lỗi mơ hồ "Error while opening encoder ... incorrect parameters".
+- Web chỉ decode được ogg (`CMakeLists.txt`, `SDL2_MIXER_FORMATS=["ogg"]`), nên
+  không thể ship thẳng wav.
+- Muốn tăng độ to khi nguồn đã sát 0 dBFS thì phải kèm `alimiter`, tăng gain
+  trần trụi sẽ clip. Công thức đã dùng cho error:
+  `-af "volume=5dB,alimiter=limit=0.89"`.
+- **Không cần trim silence.** Chỉ silence ở *đầu* file mới gây hại (làm trễ
+  phản hồi) và không file nào có. Phần còn lại là đuôi vang hoặc khoảng lặng
+  giữa file — cắt là hỏng tiếng, mà giữ cũng chẳng tốn gì đáng kể.
+
 ## Gotcha quan trọng cần nhớ
 
 - **Chỉ sửa file trong `media/` (không đụng code) → `build.sh` không tự

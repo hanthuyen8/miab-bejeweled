@@ -17,6 +17,9 @@ public:
     void playSoundMatch1();
     void playSoundMatch2();
     void playSoundMatch3();
+    void playSoundButtonHover();
+    void playSoundButtonClick();
+    void playSoundError();
 
 private:
 
@@ -25,6 +28,8 @@ private:
     GoSDL::Sound mSfxMatch1, mSfxMatch2, mSfxMatch3;
     GoSDL::Sound mSfxSelect;
     GoSDL::Sound mSfxFall;
+    GoSDL::Sound mSfxButtonHover, mSfxButtonClick;
+    GoSDL::Sound mSfxError;
     /// @}
 
     bool soundsLoaded = false;

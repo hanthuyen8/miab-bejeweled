@@ -711,11 +711,19 @@ void GameBoard::mouseButtonUp(int mX, int mY)
         Coord res = getCoord(mX, mY);
 
         // If the square is different from the previously selected one
-        if (res != mSelectedSquareFirst && checkSelectedSquare())
+        if (res != mSelectedSquareFirst)
         {
-            // Switch the state and reset the animation
-            mState = eGemSwitching;
-            mAnimationCurrentStep = 0;
+            if (checkSelectedSquare())
+            {
+                // Switch the state and reset the animation
+                mState = eGemSwitching;
+                mAnimationCurrentStep = 0;
+            }
+            else
+            {
+                // Dragged onto a square that doesn't form a match — reject the swap
+                mGame->getGameSounds()->playSoundError();
+            }
         }
     }
 }
@@ -743,6 +751,9 @@ void GameBoard::selectGem() {
             }
             else
             {
+                // Clicked a second square that doesn't form a match — reject the swap
+                mGame->getGameSounds()->playSoundError();
+
                 mState = eSteady;
                 mSelectedSquareFirst.x = -1;
                 mSelectedSquareFirst.y = -1;

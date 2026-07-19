@@ -71,6 +71,19 @@ public:
      */
     bool clicked(unsigned int mX, unsigned int mY);
 
+    /**
+     * Refreshes the hover state from the current mouse position. Like
+     * clicked(), it relies on the last drawing position, so it must be called
+     * after draw().
+     *
+     * @param mX Horizontal mouse position
+     * @param mY Vertical mouse position
+     *
+     * @return true only on the frame the pointer enters the button, so the
+     *         caller can fire a one-shot sound instead of one per frame.
+     */
+    bool enteredHover(unsigned int mX, unsigned int mY);
+
 private:
 
     /// Parent window
@@ -93,6 +106,10 @@ private:
 
     /// Last drawing position. It's used for the clicked method.
     unsigned int mLastX, mLastY;
+
+    /// Whether the pointer was inside the button on the previous check, so
+    /// enteredHover() can tell a new hover from a continuing one.
+    bool mHovered = false;
 };
 
 #endif
