@@ -84,6 +84,47 @@ trắng nên shadow chỉ là cùng một run tô đen bằng `colorMod`; alpha 
 (wrap + xuống dòng), options (đổi text động vẫn canh giữa đúng), HUD in-game,
 score table, và floating score `+20` lúc ăn điểm.
 
+![Glyph render thử](images/bitmapfont_preview.png)
+
+*Mô phỏng đúng đường vẽ của `BitmapFont` (chọn sheet, `xoffset`/`yoffset`, bước
+advance, tint bằng `colorMod`) ở tất cả các size game dùng thật — dựng trước khi
+viết C++ để kiểm chứng metric.*
+
+## Hệ quả: z-order quyết định batching
+
+Sau khi chuyển hết chữ sang atlas, màn game vẫn tốn **4 texture run** (đo bằng
+cách đếm run cùng texture trong queue đã sort): `board → atlas → gems → atlas`.
+
+Nguyên nhân **không phải** thứ tự các nhóm UI — chúng đã cùng một texture rồi.
+Trong màn game có 3 texture: `board.png`, **sheet riêng của `GemShine`** và
+atlas dùng chung.
+
+Chi tiết `GemShine` làm gì: [gemshine-explained.md](gemshine-explained.md).
+
+Lưu ý dễ nhầm: **art của gem CÓ nằm trong atlas** (`Assets::Sprite::GemBlue`…),
+nhưng gem **không được vẽ ra từ atlas**. `GameBoard::loadResources()` nạp gem từ
+atlas (`GameBoard.cpp:119-125`), rồi `GemShine::bake()` đọc chúng ra và
+composite mỗi gem với 24 frame vệt sáng vào một render target **mới**
+(`SDL_CreateTexture` + `SDL_SetRenderTarget`); `attach()` sau đó **ghi đè** các
+Image để trỏ sang sheet đó (`GemShine.cpp:224`). Atlas chỉ đóng vai trò
+nguyên liệu lúc bake.
+
+Gem nằm ở `Z::Gem = 3`, đúng **giữa** dải z của atlas (`UIPanel=2`,
+`UIText=3`, `Button::Caption=4`), nên nó cắt đôi run atlas.
+
+Sửa: hạ `Z::Gem` xuống **1**, ngay trên backdrop và dưới toàn bộ lớp atlas.
+Panel UI bên trái (x 45–195) và bàn cờ (x ≥ 241) không đè nhau nên thứ tự
+tương đối giữa chúng không ảnh hưởng hình ảnh. Kết quả:
+`board → gems → atlas` — **bớt 1 draw call**, và mọi chữ/nút/hiệu ứng gom vào
+đúng một batch.
+
+Đổi này còn dọn một chỗ mập mờ sẵn có: `Z::ScoreTable` và `Z::Gem` trước đây
+**cùng bằng 3** nhưng khác texture, nên thứ tự trước/sau do con trỏ texture
+quyết định — tức là tuỳ may rủi. Giờ score table luôn nằm trên gem.
+
+Quy tắc đã ghi lại trong `include/ZOrder.h`: **thứ gì dùng texture khác thì
+không được nằm giữa dải z của atlas.**
+
 ## Phạm vi & giới hạn
 
 - **Chỉ ASCII trong `CHARSET`.** Ký tự ngoài danh sách bị bỏ qua khi vẽ. Text

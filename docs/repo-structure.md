@@ -117,6 +117,13 @@ texture cache trong `GoSDL::Image`, mọi Image nạp cùng file atlas chia sẻ
 
 - Thư mục `docs/` chứa kế hoạch/báo cáo tối ưu (user tracking công việc ở
   đây). Xem `performance-optimization-plan.md` và các `stepN-*-report.md`.
+- `docs/images/` chứa hình minh hoạ. Hình của GemShine **sinh bằng script**
+  `docs/images/gemshine_figures.py` (chép lại công thức trong `GemShine.cpp`,
+  đọc sprite thật từ atlas) — sửa hằng số trong `GemShine.cpp` thì chạy lại
+  script, không thì hình sẽ lệch khỏi code.
+- Hiệu ứng vệt sáng trên gem: [gemshine-explained.md](gemshine-explained.md).
+  Đáng đọc trước khi động vào z-order, vì gem dùng texture riêng chứ không vẽ
+  từ atlas.
 - Phím tắt debug, cách đo draw call, bẫy build: [dev-tooling.md](dev-tooling.md).
 - Z-order layering đã gom vào `include/ZOrder.h` (xem mục "Draw depth" ở trên).
 - **Không còn TTF nào được ship.** Toàn bộ chữ trong game vẽ bằng glyph

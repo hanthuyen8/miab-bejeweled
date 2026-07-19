@@ -91,6 +91,18 @@ else()
     pkg_search_module(SDL2_TTF REQUIRED SDL2_ttf)
     pkg_search_module(JSONCPP REQUIRED jsoncpp)
 
+    # pkg_search_module reports bare library names (SDL2main, SDL2, ...) plus the
+    # directories holding them separately. Without the directories the linker
+    # only finds whatever happens to be on its default path, which on Homebrew
+    # macOS means SDL2main is missed and the native build fails to link.
+    target_link_directories(seajeweled PRIVATE
+        ${SDL2_LIBRARY_DIRS}
+        ${SDL2_IMAGE_LIBRARY_DIRS}
+        ${SDL2_MIXER_LIBRARY_DIRS}
+        ${SDL2_TTF_LIBRARY_DIRS}
+        ${JSONCPP_LIBRARY_DIRS}
+    )
+
     # Link libraries
     if(BUILD_STATIC)
         set(CMAKE_CXX_FLAGS "-static ${CMAKE_CXX_FLAGS}")

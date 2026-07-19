@@ -7,14 +7,30 @@
 // a fixed front-to-back order MUST use different z values (see the Step 1/2
 // reports). Keeping every depth here makes the layer stack reviewable in one
 // place and avoids magic numbers scattered across draw() calls.
+//
+// Z ALSO DECIDES BATCHING. The queue sorts by (z, texture), so draws sharing a
+// texture only collapse into one GPU batch if they are adjacent after sorting.
+// Anything drawn from a DIFFERENT texture that lands in the middle of a z-range
+// splits that range into two batches.
+//
+// In the game screen only three textures are in play: board.png, the GemShine
+// sheet and the shared atlas (everything else). Note the gem art IS packed in
+// the atlas, but it is not drawn from there: GemShine reads it out of the atlas
+// once and composites each gem with its 24 sweep frames into a render target of
+// its own, then repoints the gem images at that sheet (see GemShine::attach).
+// The atlas is only the bake input. So the gems must sit at a z either fully
+// below or fully above the atlas layers, never between them -- which is why
+// Gem is 1, directly above the backdrop, rather than up among the UI. The
+// board and the left-hand UI panel never overlap, so nothing is gained by
+// interleaving them, and doing so cost a whole extra draw call.
 
 namespace Z {
 
     // ---- In-game screen (StateGame / GameBoard / GameIndicators) ----
     // Layer stack, bottom -> top:
     constexpr int Board        = 0;   // board.png backdrop
+    constexpr int Gem          = 1;   // gems on the board
     constexpr int UIPanel      = 2;   // score/time/button backgrounds, loading banner
-    constexpr int Gem          = 3;   // gems on the board
     constexpr int UIText       = 3;   // score/time numbers + headers (above UIPanel)
     constexpr int ScoreTable   = 3;   // end-of-game score table
     constexpr int Selector     = 4;   // square selector
