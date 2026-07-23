@@ -97,3 +97,30 @@ Nguồn: https://defold.com/2024/03/14/Lightning-VFX/ , sample project https://g
 - Kỹ thuật #1 hợp hơn với hạ tầng draw hiện tại của bejeweled (đã hỗ trợ rotation/scale/alpha/tint qua `Image::draw`), nên làm trước. Kỹ thuật #2 có thể xem xét sau nếu muốn nâng cấp chất lượng và engine đã có/thêm được mesh + render target.
 
 **Asset tham khảo đã tải về**: `docs/lightning-effect/reference-assets/technique2-flexyourbrain/` (12 frame `b1-b12.PNG` + 5 biến thể `small_bolts1-5.png`). Lưu ý license chưa rõ ràng (xem `SOURCE.md` trong thư mục đó) — chỉ dùng để tham khảo hình dáng/tỉ lệ khi tự vẽ lại, không dùng trực tiếp trong game.
+
+# Implement thử nghiệm kỹ thuật #1: StateLightningTest
+
+Đã dựng 1 test scene riêng (`include/StateLightningTest.h`, `src/StateLightningTest.cpp`) để thử trực quan thuật toán segment-chain, tách biệt hoàn toàn khỏi gameplay/`GameBoard`:
+
+- **Cách vào scene**: boot thẳng vào `StateLightningTest` thay vì main menu qua compile define `SEAJEWELED_TEST_SCENE`, bật bằng cmake option `ENABLE_LIGHTNING_TEST_SCENE=ON` (mặc định OFF, không ảnh hưởng build thật). Xem `Game::Game()` (`src/Game.cpp`) và `CMakeLists.txt`.
+- **Demo**: bắn 1 tia sét từ tâm màn hình (400,300) đến vị trí con trỏ chuột, đổi random jitter mỗi ~65ms (`ReshuffleIntervalFrames`) để tạo cảm giác rung điện.
+- **Segment count động theo khoảng cách**: thay vì cố định N, số đoạn tính theo `round(length / TargetSegmentLengthPx)` (mặc định ~45px/đoạn), clamp `[MinSegmentCount=4, MaxSegmentCount=18]` — khoảng cách xa tự động có nhiều đoạn hơn thay vì kéo giãn ít đoạn.
+- **Nhánh phụ (branch)**: 1-2 nhánh/lần reshuffle, mọc từ 1 điểm ngẫu nhiên trên chain chính, lệch hướng chính 25-65°, dài tối đa `BranchMaxLengthPx=70px` (chặn tuyệt đối, không tỉ lệ vô hạn theo độ dài chain chính), dùng tint tối/mờ hơn (alpha thấp) để không lấn át chain chính. Hiện `BranchSegmentCount` cố định = 3, chưa co giãn theo độ dài nhánh (có thể làm sau nếu cần).
+- **Asset**: 5 texture procedural (Python + PIL/numpy, script ở scratchpad, chưa checkin vào repo) — `segment`, `cap`, `tip` (16×16), `glow` (12×12, hiện đang tắt), `impact` (20×20). Tất cả dạng grayscale + alpha, tint áp qua code (tham số `color` của `Image::draw`).
+
+## Bài học quan trọng: thẩm mỹ phụ thuộc vào texture nhiều hơn thuật toán
+
+Thuật toán segment-chain + jitter đúng như thiết kế nhưng lần đầu implement (texture 8×8, glow to/đậm) nhìn "kỳ" — như chuỗi hạt nối dây mảnh, không giống 1 tia sét liền mạch. Các nguyên nhân xác định được, theo thứ tự ảnh hưởng:
+
+1. **Glow quá to/đậm so với thân segment** → mỗi khớp nổi bật thành 1 điểm riêng biệt thay vì làm mượt mối nối. Fix: giảm kích thước xuống còn ~1.3× độ dày thân, giảm alpha (200→110), vẫn chưa đủ đẹp.
+2. **Segment không tự fade 2 đầu theo chiều dài** — texture gốc chỉ mềm theo chiều ngang (vuông góc hướng đi), 2 đầu trái/phải bị cắt phẳng tuyệt đối. Trong khi glow lại mềm đều mọi hướng → 2 phong cách edge khác nhau "choảng" nhau khi đặt cạnh nhau. Fix: cho segment/cap/tip tự fade ở 2 đầu theo chiều dài (trừ cạnh gốc thật của cap và mũi thật của tip — không cần fade vì không có gì để nối), rồi khi vẽ mỗi mảnh **overlap ~10px** vào mảnh kế bên (xem `drawBoltPiece()`, có tính `overlapStart`/`overlapEnd` theo loại sprite) để 2 vùng fade chồng lên nhau tái tạo độ sáng đầy đủ tại khớp — nhờ vậy có thể **tắt hẳn glow ở khớp** mà vẫn mượt.
+3. **Texture filter (bilinear vs nearest)**: game set `SDL_HINT_RENDER_SCALE_QUALITY=1` (bilinear) toàn cục (`go_window.cpp:25`). Thử ép nearest riêng cho texture lightning qua `SDL_SetTextureScaleMode(texture, SDL_ScaleModeNearest)` (ghi đè per-texture, không đụng phần còn lại của game) — **kết quả tệ hơn**: texture vốn là gradient Gaussian liên tục lấy mẫu ở độ phân giải quá thấp (8×8, chỉ ~8 bậc alpha), nearest biến mỗi bậc thành khối vuông to, giống "mã vạch" hơn là pixel art. Kết luận: filter không phải nguyên nhân gốc, độ phân giải nguồn mới là vấn đề.
+4. **Độ phân giải nguồn (resolution)**: tăng segment/cap/tip từ 8×8 lên **16×16** (giữ nguyên bilinear, giữ tỉ lệ sigma/fade như bản 8×8) cải thiện rõ rệt — gradient đủ mượt để blend tự nhiên. **Kết luận chung: với cách sinh texture bằng gradient liên tục (không phải pixel art vẽ tay thật), thẩm mỹ phụ thuộc chủ yếu vào (a) độ phân giải nguồn đủ lớn và (b) texture có fade/taper đúng chỗ để tự blend — thuật toán segment-chain chỉ là khung xương, không tự động "đẹp".**
+
+## Thông số đã tune (state hiện tại, `StateLightningTest.h`)
+
+- `ThicknessPx = 10`, `OverlapPx = 10`, `EDGE_FADE_FRAC = 0.28` (script gen texture).
+- `TargetSegmentLengthPx = 45`, `MinSegmentCount = 4`, `MaxSegmentCount = 18`.
+- `ReshuffleIntervalFrames = 4` (~65ms).
+- Glow/impact đã wire vào code nhưng **glow ở khớp đang tắt** (comment trong `draw()`) vì overlap của segment/cap/tip đã đủ mượt; impact ở điểm cuối vẫn bật.
+- Chưa làm: nhánh phụ co giãn segment count theo độ dài (đang cố định 3), thử độ phân giải > 16×16, checkin script Python gen texture vào repo (hiện ở scratchpad ngoài repo).

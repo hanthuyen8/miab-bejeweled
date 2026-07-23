@@ -48,6 +48,14 @@ if(ENABLE_CHEATS)
     target_compile_definitions(seajeweled PRIVATE SEAJEWELED_CHEATS)
 endif()
 
+# Boots straight into StateLightningTest (see docs/lightning-effect/) instead
+# of the main menu, for fast iteration on the effect. Dev-only, always OFF by
+# default -- never enable for a real build.
+option(ENABLE_LIGHTNING_TEST_SCENE "Boot directly into the lightning effect test scene" OFF)
+if(ENABLE_LIGHTNING_TEST_SCENE)
+    target_compile_definitions(seajeweled PRIVATE SEAJEWELED_TEST_SCENE)
+endif()
+
 if(EMSCRIPTEN)
     # SDL2/_image/_mixer/_ttf ship as built-in Emscripten ports, enabled via
     # -s flags applied to both compile and link steps.

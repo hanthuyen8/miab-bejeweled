@@ -74,6 +74,15 @@ namespace Assets {
         // Font glyphs also live in this atlas, but they are looked up through
         // media/fonts.json rather than by name here -- see BitmapFont.
     }
+
+    // --- Throwaway dev/test assets (media/test/, not part of any shipped screen) ---
+    namespace Test {
+        constexpr const char * LightningSegment = "media/test/lightning_segment_16x16.png";
+        constexpr const char * LightningCap     = "media/test/lightning_cap_16x16.png";
+        constexpr const char * LightningTip     = "media/test/lightning_tip_16x16.png";
+        constexpr const char * LightningGlow    = "media/test/lightning_glow_12x12.png";
+        constexpr const char * LightningImpact  = "media/test/lightning_impact_20x20.png";
+    }
 }
 
 #endif /* _ASSETS_H_ */

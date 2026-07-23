@@ -61,6 +61,13 @@ namespace Z {
 
     // ---- Global overlay ----
     constexpr int Cursor = 999;         // mouse cursor, always on top
+
+    // ---- Dev/test screens (StateLightningTest etc, never reached in a shipped build) ----
+    namespace Test {
+        constexpr int Lightning       = 1;
+        constexpr int LightningGlow   = 2; // additive joint glow, drawn over the segments
+        constexpr int LightningImpact = 3; // burst at the target point, drawn over everything
+    }
 }
 
 #endif /* _ZORDER_H_ */

@@ -8,6 +8,7 @@
 #include "StateHowToPlay.h"
 #include "StateGameTimetrial.h"
 #include "StateGameEndless.h"
+#include "StateLightningTest.h"
 
 #include "MiabSDK.h"
 #include "OptionsManager.h"
@@ -27,7 +28,14 @@ Game::Game ()
         lDEBUG << "Game: font atlas failed to load, text will not render";
     }
 
+#ifdef SEAJEWELED_TEST_SCENE
+    // Dev-only boot directive to iterate on the lightning effect without
+    // going through the menu each time. Never defined in a real build (see
+    // CMakeLists.txt: ENABLE_LIGHTNING_TEST_SCENE).
+    changeState("stateLightningTest");
+#else
     changeState("stateMainMenu");
+#endif
 
     // Xin highscore hiện tại của user từ host page (MIAB), nếu có nhúng qua iframe. Async, không
     // block — nếu response chưa về kịp (hoặc không bao giờ về), ScoreTable vẫn dùng giá trị local
@@ -182,6 +190,11 @@ void Game::changeState(string S)
     else if(S == "stateQuit")
     {
         close();
+    }
+    else if(S == "stateLightningTest")
+    {
+        mCurrentState = std::make_shared<StateLightningTest>(this);
+        mCurrentStateString = "stateLightningTest";
     }
 }
 
