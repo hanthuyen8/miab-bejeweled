@@ -68,3 +68,32 @@ Tìm được thêm các nguồn kỹ thuật chung (không riêng game nào):
 - Đổi lại cho hiệu ứng mượt/đẹp hơn ở độ phân giải cao, ít lặp pattern.
 
 **Kết luận cho project này**: codebase đang ưu tiên giảm draw call (xem commit `optimize drawcall`, `optimize build size`), nên hướng sprite-based (dùng chung atlas/material với sprite khác) hợp hơn shader/bloom pass riêng.
+
+## Danh sách texture cần có (asset còn thiếu)
+
+Thuật toán (segment chain + jitter + deque) đã rõ, phần còn thiếu là art asset:
+
+1. **Segment/body texture** — hình chữ nhật dài, hẹp, gradient sáng ở giữa mờ dần ra 2 mép cạnh (không phải mép đầu/cuối) để ghép nhiều đoạn cạnh nhau trông liền mạch. Nên có 1-2 biến thể để random giữa các đoạn.
+2. **Cap/tip texture** (đầu và đuôi) — giống segment nhưng thon nhọn dần về 1 phía (taper), dùng ở điểm đầu/cuối của tia sét để không bị cắt cụt.
+3. **Glow texture (soft circular)** — hình tròn mờ dần ra viền (radial gradient trắng/màu điện → alpha 0), additive blend, đặt tại mỗi điểm nối giữa 2 segment để che mối nối + tạo cảm giác phát sáng.
+4. **(Tùy chọn) Impact/burst texture** — glow lớn hơn đặt tại điểm cuối (nơi tia sét chạm đích), tạo cảm giác "nổ" nhẹ khi chạm. Không bắt buộc.
+
+Ghi chú: cả 4 texture nên làm dạng **grayscale + alpha**, không vẽ sẵn màu — màu tint áp qua code (sprite color tint) để dễ đổi màu theo loại lightning mà không cần nhiều file ảnh.
+
+# Kỹ thuật #2: Mesh-stretch + render target (tham khảo, làm sau kỹ thuật #1)
+
+Nguồn: https://defold.com/2024/03/14/Lightning-VFX/ , sample project https://github.com/FlexYourBrain/sample_LightningVFX (demo: https://flexyourbrain.itch.io/lightning-vfx)
+
+Đây là kỹ thuật khác hẳn segment-chain — không random/jitter theo frame, mà dùng animation vẽ sẵn rồi kéo giãn:
+
+1. **Art asset**: 1 sprite animation dọc, kích thước cố định 96×820px, 12 frame loop (pixel art, upscale nhẹ lúc export) — vẽ tay, không phải procedural.
+2. **Render target**: capture animation này offscreen mỗi frame vào 1 render target RGBA (giữ alpha), dùng 2 predicate render riêng (`offscreen` để capture, `captured` để hiển thị).
+3. **Mesh component**: 1 quad 2 triangle (6 vertex), thuộc tính `position` (float32×3) và `texcoord0` (float32×2). Vertex được cập nhật mỗi frame để "kéo giãn" quad này giữa 2 điểm neo (đầu/cuối tia sét), lấy vị trí qua `go.get_position()` — cho phép tia sét khóa (lock-on) vào mục tiêu di chuyển.
+4. **Shader**: vertex/fragment cơ bản — vertex nhận position + texcoord0, fragment sample texture từ render target đã capture.
+5. **Performance**: 4-15 draw call, build HTML5 nén ~2MB — khá nhẹ nhờ chỉ 1 mesh + 1 render target, không tốn nhiều draw call như nhiều segment rời.
+
+**So với kỹ thuật #1 (segment-chain)**:
+- Kỹ thuật #2 đơn giản hơn về code runtime (không cần tính N segment + random jitter mỗi frame) nhưng đòi hỏi artist vẽ 1 animation dài đẹp sẵn (12 frame, đúng tỉ lệ), và cần render target — codebase bejeweled hiện chưa có khái niệm render target/mesh component (engine tự viết SDL2, chỉ có `Image::draw` sprite-based, không có mesh/vertex buffer).
+- Kỹ thuật #1 hợp hơn với hạ tầng draw hiện tại của bejeweled (đã hỗ trợ rotation/scale/alpha/tint qua `Image::draw`), nên làm trước. Kỹ thuật #2 có thể xem xét sau nếu muốn nâng cấp chất lượng và engine đã có/thêm được mesh + render target.
+
+**Asset tham khảo đã tải về**: `docs/lightning-effect/reference-assets/technique2-flexyourbrain/` (12 frame `b1-b12.PNG` + 5 biến thể `small_bolts1-5.png`). Lưu ý license chưa rõ ràng (xem `SOURCE.md` trong thư mục đó) — chỉ dùng để tham khảo hình dáng/tỉ lệ khi tự vẽ lại, không dùng trực tiếp trong game.
